@@ -26,6 +26,7 @@ export function StudyShell({ chapters }: { chapters: StudyChapter[] }) {
   const [dark, setDark] = useState(true);
   const [done, setDone] = useState<string[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     try {
@@ -34,17 +35,21 @@ export function StudyShell({ chapters }: { chapters: StudyChapter[] }) {
       if (Array.isArray(savedProgress)) setDone(savedProgress);
       if (savedTheme === "light") setDark(false);
     } catch {
-      // Ignore invalid local persistence and continue with defaults.
+      // Invalid local persistence should never block the study experience.
+    } finally {
+      setHydrated(true);
     }
   }, []);
 
   useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem(PROGRESS_KEY, JSON.stringify(done));
-  }, [done]);
+  }, [done, hydrated]);
 
   useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
-  }, [dark]);
+  }, [dark, hydrated]);
 
   const normalizedQuery = query.trim().toLowerCase();
 

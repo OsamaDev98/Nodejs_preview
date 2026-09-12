@@ -77,7 +77,7 @@ module.exports = {
 console.log("Logger module loaded");
 
 function log(message) {
-  console.log(`[LOG]: ${message}`);
+  console.log("[LOG]: " + message);
 }
 
 module.exports = log;
@@ -107,7 +107,7 @@ const log = require("./logger");
 const counter1 = require("./counter");
 const counter2 = require("./counter");
 
-log(`2 + 3 = ${math.add(2, 3)}`);
+log("2 + 3 = " + math.add(2, 3));
 
 console.log(counter1.increment());
 console.log(counter2.increment());
@@ -263,7 +263,7 @@ for (let i = 1; i <= 4; i++) {
   );
 
   console.log(
-    `Task ${i}:`,
+    "Task " + i + ":",
     performance.now() - start
   );
 }
@@ -287,7 +287,7 @@ for (let i = 1; i <= 5; i++) {
     "sha512",
     () => {
       console.log(
-        `Task ${i}:`,
+        "Task " + i + ":",
         performance.now() - start
       );
     }

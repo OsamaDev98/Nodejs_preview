@@ -213,7 +213,7 @@ Callback هي Function يتم تمريرها إلى Function أخرى لكي ي�
 
 \`\`\`js
 function greet(name, callback) {
-  console.log(`Hello ${name}`);
+  console.log("Hello " + name);
   callback();
 }
 

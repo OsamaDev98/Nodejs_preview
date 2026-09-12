@@ -1,6 +1,7 @@
 import { eventLoopChapter } from "./event-loop";
 import { filesBuffersChapter } from "./files-buffers";
 import { foundationsChapter } from "./foundations";
+import { labsReferenceChapter } from "./labs-reference";
 import { libuvThreadpoolChapter } from "./libuv-threadpool";
 import { microtasksChapter } from "./microtasks";
 import { modulesChapter } from "./modules";
@@ -16,6 +17,7 @@ export const chapters = [
   eventLoopChapter,
   microtasksChapter,
   workersPerformanceChapter,
+  labsReferenceChapter,
 ];
 
-export const totalReadingMinutes = 385;
+export const totalReadingMinutes = 445;

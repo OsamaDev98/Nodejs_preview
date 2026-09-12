@@ -115,7 +115,7 @@ writeStream.write("Node.js\n");
 writeStream.end();
 \`\`\`
 
-\`write()` يرسل data للـ stream، أما \`end()` فيعني أنه لا توجد بيانات إضافية بعد الآن.
+\`write()\` يرسل data للـ stream، أما \`end()\` فيعني أنه لا توجد بيانات إضافية بعد الآن.
 
 \`\`\`js
 writeStream.end("Last line");

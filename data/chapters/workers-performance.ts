@@ -326,7 +326,7 @@ for (let i = 1; i <= 5; i++) {
     64,
     "sha512",
     () => {
-      console.log(`Task ${i}:`, performance.now() - start);
+      console.log("Task " + i + ":", performance.now() - start);
     }
   );
 }

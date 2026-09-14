@@ -256,10 +256,11 @@ http://localhost:3000/users?page=2
 
 لذلك المقارنة المباشرة مع \`/users\` قد تفشل لو هناك Query String.
 
-الطريقة الأنظف:
+الطريقة الأنظف بدون استخدام template literal داخل مثال الكود:
 
 \`\`\`js
-const url = new URL(req.url, `http://${req.headers.host}`);
+const baseUrl = "http://" + req.headers.host;
+const url = new URL(req.url, baseUrl);
 
 console.log(url.pathname);
 console.log(url.searchParams.get("page"));

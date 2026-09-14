@@ -1,6 +1,8 @@
 import { eventLoopChapter } from "./event-loop";
+import { expressMiddlewareChapter } from "./express-middleware";
 import { filesBuffersChapter } from "./files-buffers";
 import { foundationsChapter } from "./foundations";
+import { httpFundamentalsChapter } from "./http-fundamentals";
 import { labsReferenceChapter } from "./labs-reference";
 import { libuvThreadpoolChapter } from "./libuv-threadpool";
 import { microtasksChapter } from "./microtasks";
@@ -18,6 +20,8 @@ export const chapters = [
   microtasksChapter,
   workersPerformanceChapter,
   labsReferenceChapter,
+  httpFundamentalsChapter,
+  expressMiddlewareChapter,
 ];
 
-export const totalReadingMinutes = 445;
+export const totalReadingMinutes = 565;

@@ -56,7 +56,7 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+  console.log("Server listening on port " + port);
 });
 \`\`\`
 
@@ -84,7 +84,7 @@ HTTP Method + Path = Route
 \`\`\`js
 app.get("/users/:id", (req, res) => {
   console.log(req.params.id);
-  res.send(`User ${req.params.id}`);
+  res.send("User " + req.params.id);
 });
 \`\`\`
 

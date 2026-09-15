@@ -5,8 +5,8 @@ export const foundationsChapter: StudyChapter = {
   number: 1,
   title: "أساسيات Node.js وبيئة التشغيل",
   subtitle: "من معنى Runtime وحتى V8 وBrowser APIs وGlobal Object وREPL.",
-  readingTime: "38 دقيقة",
-  keywords: ["Node.js", "Runtime", "V8", "REPL", "Browser", "globalThis", "Cross-platform"],
+  readingTime: "41 دقيقة",
+  keywords: ["Node.js", "Runtime", "V8", "REPL", "Browser", "globalThis", "Cross-platform", "libuv", "Node APIs"],
   content: String.raw`
 # 1. ما هو Node.js؟
 
@@ -307,18 +307,116 @@ Garbage Collection when needed
 Optimization / Deoptimization during runtime
 \`\`\`
 
-لكن تذكر أن Node.js أكبر من V8:
+### الصورة الكاملة: Node.js ليس V8 فقط
+
+المخطط التالي يجمع أهم الأجزاء التي تحدثنا عنها في صورة واحدة:
 
 \`\`\`text
-              Node.js
-                 │
-      ┌──────────┼──────────┐
-      ↓          ↓          ↓
-     V8        libuv      Node APIs
-      │          │
-JavaScript     Async
- Engine         I/O
+Your JavaScript Code
+        ↓
+      Node.js
+ ┌───────────────────────┐
+ │          V8           │
+ │ Parsing               │
+ │ Compilation / JIT     │
+ │ Execution             │
+ │ Memory / Heap         │
+ │ Garbage Collection    │
+ │ Optimization          │
+ └───────────────────────┘
+        +
+ ┌───────────────────────┐
+ │        libuv          │
+ │ Event Loop            │
+ │ Thread Pool           │
+ │ Async I/O             │
+ │ File System*          │
+ │ Networking*           │
+ └───────────────────────┘
+        +
+ ┌───────────────────────┐
+ │ Node.js APIs / C++    │
+ │ fs, http, net, crypto │
+ │ timers, streams ...   │
+ └───────────────────────┘
+        ↓
+ Operating System
 \`\`\`
+
+هذا الرسم ممتاز كـ **Mental Model**، لكن يوجد تصحيح مهم حتى لا يتحول التبسيط إلى معلومة خاطئة:
+
+- **V8** يشغّل JavaScript ويدير الـ Heap والـ Garbage Collection والـ JIT Optimization.
+- **libuv** يوفر Event Loop وThread Pool وطبقة cross-platform للتعامل مع asynchronous I/O.
+- **File System** في Node يرتبط غالبًا بـ libuv Thread Pool في الـ async filesystem APIs.
+- **Networking** لا يعني أن libuv Thread Pool ينفذ كل network request؛ أغلب socket/network I/O تعتمد على آليات الـ OS مثل epoll أو kqueue أو IOCP، بينما libuv تنسق معها عبر Event Loop.
+- **Node.js APIs** مثل \`fs\`, \`http\`, \`net\`, \`crypto\`, timers وstreams هي الواجهة التي تتعامل معها أنت من JavaScript، وتحتها توجد JavaScript implementations وC/C++ bindings وlibuv وOS APIs حسب العملية.
+
+يمكنك التفكير في المسؤوليات بهذا الشكل:
+
+| الجزء | مسؤوليته الأساسية |
+|---|---|
+| V8 | تنفيذ JavaScript وإدارة الذاكرة والـ GC والـ JIT |
+| libuv | Event Loop وAsync I/O وThread Pool وOS abstraction |
+| Node APIs | الواجهة البرمجية التي تستخدمها: fs/http/net/crypto/streams/timers |
+| C/C++ bindings | الربط بين JavaScript والطبقات native عندما تحتاج العملية لذلك |
+| Operating System | الملفات، sockets، الشبكة، system calls والموارد الحقيقية |
+
+ومثال عملي يربط الطبقات:
+
+\`\`\`js
+const fs = require("node:fs");
+
+fs.readFile("users.json", "utf8", (err, data) => {
+  if (err) throw err;
+  console.log(data);
+});
+\`\`\`
+
+النموذج المبسط:
+
+\`\`\`text
+Your JavaScript
+      ↓
+Node fs API
+      ↓
+Node internals / native bindings
+      ↓
+libuv
+      ↓
+Thread Pool + Operating System
+      ↓
+File read completes
+      ↓
+Event Loop
+      ↓
+Your callback
+      ↓
+V8 executes callback JavaScript
+\`\`\`
+
+أما في HTTP/networking فالصورة تختلف قليلًا:
+
+\`\`\`text
+Your JavaScript
+      ↓
+http / net API
+      ↓
+Node + libuv
+      ↓
+Operating System networking mechanisms
+      ↓
+Network event becomes ready
+      ↓
+Event Loop
+      ↓
+JavaScript callback
+      ↓
+V8 executes it
+\`\`\`
+
+إذن الجملة التي يجب تثبيتها:
+
+> V8 يشغّل JavaScript، libuv تساعد Node على إدارة الـ asynchronous I/O والـ Event Loop، وNode APIs تربط كودك بهذه الإمكانيات وبنظام التشغيل.
 
 ## 6. لماذا Node.js يحتاج C++؟
 
@@ -586,12 +684,15 @@ Node.js = Runtime Environment
 7. ما المقصود بـ Memory Management؟
 8. ما وظيفة Garbage Collector؟ وهل يعمل فورًا عند إزالة reference؟
 9. ما معنى Optimization وDeoptimization داخل V8؟
-10. هل Node.js هو V8 فقط؟
-11. لماذا يحتاج Node إلى C/C++؟
-12. ما معنى Cross-platform؟
-13. ما هو REPL؟
-14. كيف تشغل ملف JavaScript باستخدام Node؟
-15. ما الفرق بين Browser APIs وNode APIs؟
-16. لماذا \`document\` غير موجود عادة في Node؟
-17. ما هو \`globalThis\`؟
+10. ما الفرق بين مسؤولية V8 ومسؤولية libuv؟
+11. ما دور Node.js APIs وC++ bindings؟
+12. هل Network I/O تستخدم Thread Pool لكل request؟
+13. هل Node.js هو V8 فقط؟
+14. لماذا يحتاج Node إلى C/C++؟
+15. ما معنى Cross-platform؟
+16. ما هو REPL؟
+17. كيف تشغل ملف JavaScript باستخدام Node؟
+18. ما الفرق بين Browser APIs وNode APIs؟
+19. لماذا \`document\` غير موجود عادة في Node؟
+20. ما هو \`globalThis\`؟
 `};

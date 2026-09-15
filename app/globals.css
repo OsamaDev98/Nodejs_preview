@@ -252,6 +252,84 @@ th, td { border: 1px solid var(--border); padding: 11px 12px; text-align: right;
 th { background: var(--surface-2); color: var(--text); }
 td { color: var(--muted); }
 
+.reviewQuestion {
+  position: relative;
+  margin: 8px 0;
+  padding: 9px 12px 9px 42px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: help;
+  transition: background .16s ease, border-color .16s ease, color .16s ease;
+}
+.reviewQuestion::after {
+  content: "؟";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 900;
+  font-size: .78rem;
+}
+.reviewQuestion:hover,
+.reviewQuestion:focus-visible {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  color: var(--text);
+  outline: none;
+}
+.reviewQuestionText { display: inline; }
+.reviewAnswer {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  z-index: 20;
+  width: min(560px, calc(100vw - 64px));
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 18px 46px rgba(16, 24, 40, .18);
+  color: var(--text);
+  line-height: 1.8;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(6px);
+  transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+}
+.reviewAnswer::after {
+  content: "";
+  position: absolute;
+  right: 24px;
+  top: 100%;
+  border: 8px solid transparent;
+  border-top-color: var(--surface);
+}
+.reviewAnswer strong {
+  color: var(--accent-strong);
+  font-size: .82rem;
+}
+.reviewAnswer span {
+  color: var(--muted);
+  font-size: .92rem;
+}
+.reviewQuestion:hover .reviewAnswer,
+.reviewQuestion:focus-visible .reviewAnswer,
+.reviewQuestion:focus-within .reviewAnswer {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
 .lessonNavigation { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
 .lessonNavButton {
   justify-content: flex-start;
@@ -308,4 +386,19 @@ td { color: var(--muted); }
   .markdownLesson h2 { font-size: 1.25rem; }
   .lessonNavigation { grid-template-columns: 1fr; }
   .lessonNavButton.next { text-align: right; justify-content: space-between; }
+  .reviewQuestion { padding-left: 36px; }
+  .reviewAnswer {
+    position: static;
+    width: 100%;
+    margin-top: 10px;
+    display: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    box-shadow: none;
+  }
+  .reviewAnswer::after { display: none; }
+  .reviewQuestion:hover .reviewAnswer,
+  .reviewQuestion:focus-visible .reviewAnswer,
+  .reviewQuestion:focus-within .reviewAnswer { display: grid; }
 }

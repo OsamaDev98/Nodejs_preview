@@ -5,7 +5,7 @@ export const foundationsChapter: StudyChapter = {
   number: 1,
   title: "أساسيات Node.js وبيئة التشغيل",
   subtitle: "من معنى Runtime وحتى V8 وBrowser APIs وGlobal Object وREPL.",
-  readingTime: "35 دقيقة",
+  readingTime: "38 دقيقة",
   keywords: ["Node.js", "Runtime", "V8", "REPL", "Browser", "globalThis", "Cross-platform"],
   content: String.raw`
 # 1. ما هو Node.js؟
@@ -105,6 +105,209 @@ CPU
 \`\`\`
 
 V8 مسؤول عن Parsing وCompilation وExecution وMemory Management وGarbage Collection وOptimization. لكن Node.js ليس V8 فقط.
+
+### ماذا يحدث للكود داخل V8؟
+
+عندما تكتب JavaScript، لا ينتقل الكود مباشرة إلى CPU. يمر بعدة مراحل داخل JavaScript Engine. استخدم هذا الـ mental model:
+
+\`\`\`text
+You write JavaScript
+        ↓
+Parsing
+"Understand the code"
+        ↓
+Compilation
+"Convert it to executable instructions"
+        ↓
+Execution
+"Run it"
+        ↓
+Memory Management
+"Store the data it needs"
+        ↓
+Garbage Collection
+"Remove data no longer needed"
+        ↓
+Optimization
+"Make frequently executed code faster"
+\`\`\`
+
+وهذه المراحل ليست دائمًا خطًا زمنيًا منفصلًا يحدث مرة واحدة فقط؛ أثناء تشغيل البرنامج يمكن أن يحدث تخصيص Memory وGarbage Collection وOptimization مرات كثيرة. الرسم هدفه أن يعطيك الصورة الذهنية الأساسية.
+
+### Parsing — فهم بنية الكود
+
+Parsing يعني أن V8 يقرأ Source Code ويتأكد من أن تركيب JavaScript مفهوم نحويًا، ثم يحوله إلى تمثيل داخلي يستطيع الـ engine التعامل معه.
+
+مثلًا:
+
+\`\`\`js
+const x = 10 + 20;
+console.log(x);
+\`\`\`
+
+V8 لا يتعامل معه كنص عادي فقط. يجب أن يفهم أن هناك variable declaration وexpression وfunction call.
+
+Mental model مبسط:
+
+\`\`\`text
+JavaScript Source Code
+        ↓
+Tokenizer / Parser
+        ↓
+Internal Representation / AST-like structure
+\`\`\`
+
+إذا كان هناك Syntax Error، تتوقف العملية قبل التنفيذ الطبيعي:
+
+\`\`\`js
+const x = ;
+\`\`\`
+
+### Compilation — تحويل الكود إلى تعليمات قابلة للتنفيذ
+
+بعد أن يفهم V8 بنية الكود، يحتاج إلى تحويله إلى شكل يمكن تنفيذه بكفاءة. V8 يستخدم عدة طبقات وتقنيات داخلية، لكن كمبتدئ يكفي أن تفهم:
+
+\`\`\`text
+JavaScript
+   ↓
+V8 Compiler / Interpreter pipeline
+   ↓
+Executable instructions
+\`\`\`
+
+لا تحفظ أن JavaScript مجرد "interpreted language" فقط؛ محركات JavaScript الحديثة مثل V8 تستخدم compilation وJIT optimization أثناء التشغيل.
+
+### Execution — تشغيل التعليمات
+
+بعد تجهيز التعليمات يبدأ V8 في تنفيذ البرنامج.
+
+\`\`\`js
+const a = 5;
+const b = 7;
+console.log(a + b);
+\`\`\`
+
+النتيجة:
+
+\`\`\`text
+12
+\`\`\`
+
+أثناء التنفيذ تدخل Functions إلى Call Stack وتخرج منها بعد الانتهاء.
+
+\`\`\`text
+Function call
+    ↓
+Call Stack
+    ↓
+Execute instructions
+    ↓
+Return result
+\`\`\`
+
+### Memory Management — أين تذهب البيانات؟
+
+البرنامج يحتاج Memory لتخزين القيم والـ objects والـ functions والبيانات المؤقتة.
+
+\`\`\`js
+const user = {
+  name: "Osama",
+  age: 28,
+};
+\`\`\`
+
+الـ object يحتاج مساحة في Memory أثناء استخدام البرنامج له.
+
+V8 يدير الذاكرة تلقائيًا بدل أن تطلب أنت يدويًا مساحة لكل object ثم تحررها بنفسك كما يحدث في بعض اللغات منخفضة المستوى.
+
+Mental model:
+
+\`\`\`text
+Create value / object
+        ↓
+Allocate Memory
+        ↓
+Use the data
+\`\`\`
+
+### Garbage Collection — تنظيف البيانات غير المستخدمة
+
+مع الوقت قد تنشئ Objects لم تعد هناك حاجة إليها. V8 يحتوي Garbage Collector يحدد الذاكرة التي لم يعد البرنامج يستطيع الوصول إليها ويستعيدها لاستخدامات أخرى.
+
+مثال مفاهيمي:
+
+\`\`\`js
+let user = { name: "Osama" };
+user = null;
+\`\`\`
+
+بعد إزالة المرجع إلى الـ object، قد يصبح object القديم غير قابل للوصول، وبالتالي يمكن للـ Garbage Collector تنظيفه لاحقًا.
+
+الفكرة:
+
+\`\`\`text
+Object exists
+    ↓
+No reachable references
+    ↓
+Garbage Collector detects it
+    ↓
+Memory can be reclaimed
+\`\`\`
+
+المهم: لا تفهم Garbage Collection على أنها تعمل فورًا بمجرد كتابة \`user = null\`. الـ engine يقرر متى وكيف ينفذ GC وفق استراتيجيته.
+
+### Optimization — جعل الكود المتكرر أسرع
+
+V8 يراقب التنفيذ. إذا وجد Code Path أو Function يتم تشغيلها كثيرًا، يمكن أن يحاول تحسينها باستخدام JIT optimization حتى تعمل أسرع.
+
+مثال:
+
+\`\`\`js
+function add(a, b) {
+  return a + b;
+}
+
+for (let i = 0; i < 1_000_000; i++) {
+  add(i, i + 1);
+}
+\`\`\`
+
+الفكرة المبسطة:
+
+\`\`\`text
+Code runs
+   ↓
+V8 observes behavior
+   ↓
+Frequently executed code becomes "hot"
+   ↓
+V8 may optimize it
+   ↓
+Faster execution
+\`\`\`
+
+وفي بعض الحالات، إذا تغيرت assumptions التي اعتمد عليها optimization، يمكن أن يحدث deoptimization ثم يعيد V8 اختيار طريقة تنفيذ مناسبة.
+
+إذن الصورة الكاملة التي يجب أن تثبت عندك:
+
+\`\`\`text
+JavaScript Source Code
+        ↓
+Parsing
+        ↓
+Compilation / JIT pipeline
+        ↓
+Execution
+        ↓
+Memory Allocation
+        ↓
+Garbage Collection when needed
+        ↓
+Optimization / Deoptimization during runtime
+\`\`\`
+
+لكن تذكر أن Node.js أكبر من V8:
 
 \`\`\`text
               Node.js
@@ -377,12 +580,18 @@ Node.js = Runtime Environment
 1. ما الفرق بين JavaScript وNode.js؟
 2. ما معنى Runtime Environment؟
 3. ما وظيفة V8؟
-4. هل Node.js هو V8 فقط؟
-5. لماذا يحتاج Node إلى C/C++؟
-6. ما معنى Cross-platform؟
-7. ما هو REPL؟
-8. كيف تشغل ملف JavaScript باستخدام Node؟
-9. ما الفرق بين Browser APIs وNode APIs؟
-10. لماذا \`document\` غير موجود عادة في Node؟
-11. ما هو \`globalThis\`؟
+4. ما المقصود بـ Parsing داخل V8؟
+5. لماذا نقول إن V8 يستخدم Compilation وJIT بدل وصف JavaScript بأنها interpreted فقط؟
+6. ماذا يحدث أثناء Execution؟
+7. ما المقصود بـ Memory Management؟
+8. ما وظيفة Garbage Collector؟ وهل يعمل فورًا عند إزالة reference؟
+9. ما معنى Optimization وDeoptimization داخل V8؟
+10. هل Node.js هو V8 فقط؟
+11. لماذا يحتاج Node إلى C/C++؟
+12. ما معنى Cross-platform؟
+13. ما هو REPL؟
+14. كيف تشغل ملف JavaScript باستخدام Node؟
+15. ما الفرق بين Browser APIs وNode APIs؟
+16. لماذا \`document\` غير موجود عادة في Node؟
+17. ما هو \`globalThis\`؟
 `};

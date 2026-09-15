@@ -197,7 +197,7 @@ export function StudyShell({ chapters }: { chapters: StudyChapter[] }) {
           </button>
         </header>
 
-        <MarkdownLesson content={activeChapter.content} />
+        <MarkdownLesson content={activeChapter.content} chapterId={activeChapter.id} />
 
         <footer className="lessonNavigation">
           {previousChapter ? (

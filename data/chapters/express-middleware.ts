@@ -8,6 +8,39 @@ export const expressMiddlewareChapter: StudyChapter = {
   readingTime: "65 دقيقة",
   keywords: ["Express", "Routing", "Middleware", "next", "morgan", "express.static", "req", "res", "app.use", "app.get"],
   content: String.raw`
+# قبل أن تبدأ: Mental Design للدرس كله
+
+Express لا يغير HTTP؛ هو ينظم رحلة الـ request التي درستها في الدرس السابق على شكل Pipeline واضحة.
+
+\`\`\`text
+HTTP Request
+    ↓
+Express App
+    ↓
+Global Middleware
+logger / json / auth ...
+    ↓
+Router
+    ↓
+Route Match
+method + path
+    ↓
+Route Middleware
+    ↓
+Controller / Handler
+    ↓
+Service / Business Logic
+    ↓
+Response
+
+If error
+    ↓
+Error Middleware
+\`\`\`
+
+كل شيء في الدرس يجب أن تضعه في مكانه داخل هذا الـ pipeline: app.use يسجل طبقة، next ينقل التحكم، Router يقسم المسارات، و404/Error handlers تأتي في أماكن محددة بسبب ترتيب الـ stack.
+
+
 # 199. ما هو Express؟
 
 Express هو Web Framework / minimalist web framework مبني فوق Node.js HTTP APIs. هو لا يستبدل HTTP، بل يعطيك abstraction وتنظيمًا أسهل للتعامل مع requests, responses, routes وmiddleware.
@@ -600,6 +633,28 @@ If error:
     ↓
 Error Middleware
 \`\`\`
+
+## كيف تربط أجزاء الدرس معًا؟
+
+| المفهوم | مكانه في Express Pipeline |
+|---|---|
+| app | التطبيق والـ middleware stack |
+| Route | Method + Path + Handler |
+| req.params | قيم المسار الديناميكية |
+| req.query | query string values |
+| req.body | body بعد parsing |
+| app.use | تسجيل middleware/router |
+| Middleware | طبقة تمر عبرها request |
+| next() | نقل التحكم للطبقة التالية |
+| Router | تقسيم routes إلى modules |
+| Controller | يتعامل مع HTTP layer |
+| Service | business logic |
+| 404 Handler | يعمل بعد فشل كل routes في المطابقة |
+| Error Middleware | المسار المركزي لمعالجة الأخطاء |
+| Morgan | logging middleware |
+
+> اقرأ أي Express app من أعلى لأسفل كأنه **Stack**: ترتيب التسجيل يحدد رحلة request.
+
 
 ## أسئلة مراجعة
 

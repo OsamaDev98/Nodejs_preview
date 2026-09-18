@@ -135,15 +135,45 @@ writeStream.end("Last line");
 - Database exports.
 - Proxy servers.
 
-# 68. pipe()
+# 68. ما هو Stream pipe()؟
 
-من أجمل أفكار Streams:
+\`pipe()\` هي Method في Node.js Streams تستخدم **لربط Readable Stream مباشرةً بـ Writable Stream** بحيث تنتقل البيانات من المصدر إلى الوجهة تلقائيًا على شكل chunks.
+
+بمعنى أبسط:
+
+> \`pipe()\` = خُذ البيانات التي تخرج من Readable Stream ومرّرها إلى Writable Stream تدريجيًا.
+
+\`\`\`text
+Readable Stream
+      ↓
+    pipe()
+      ↓
+Writable Stream
+\`\`\`
+
+مثال أساسي:
 
 \`\`\`js
 readStream.pipe(writeStream);
 \`\`\`
 
-مثال:
+بدل أن تكتب يدويًا:
+
+\`\`\`js
+readStream.on("data", (chunk) => {
+  writeStream.write(chunk);
+});
+\`\`\`
+
+يمكنك غالبًا استخدام:
+
+\`\`\`js
+readStream.pipe(writeStream);
+\`\`\`
+
+وهذا يجعل الكود أبسط، ويعطي Streams فرصة أفضل لإدارة تدفق البيانات و**Backpressure**.
+
+### مثال: نسخ ملف باستخدام pipe()
 
 \`\`\`js
 const fs = require("node:fs");
@@ -154,18 +184,164 @@ const writeStream = fs.createWriteStream("copy.mp4");
 readStream.pipe(writeStream);
 \`\`\`
 
+المسار:
+
 \`\`\`text
-File A
-  ↓
+large.mp4
+   ↓
 Readable Stream
-  ↓
-chunks
-  ↓
+   ↓
+chunk
+chunk
+chunk
+   ↓
+pipe()
+   ↓
 Writable Stream
-  ↓
-File B
+   ↓
+copy.mp4
 \`\`\`
 
+الملف لا يحتاج أن يُحمّل بالكامل في الذاكرة قبل بدء الكتابة؛ يتم نقله تدريجيًا.
+
+### ماذا تفعل pipe() عمليًا؟
+
+فكرتها المفاهيمية:
+
+\`\`\`text
+Readable produces a chunk
+          ↓
+pipe sends it to Writable
+          ↓
+Writable consumes the chunk
+          ↓
+next chunk
+          ↓
+...
+\`\`\`
+
+كما تتعامل \`pipe()\` مع إشارات تدفق البيانات بين الطرفين، ولذلك هي أفضل من كتابة \`data\` + \`write()\` يدويًا في كثير من السيناريوهات.
+
+### pipe() وBackpressure
+
+لو الـ Readable أسرع من Writable:
+
+\`\`\`text
+Readable
+FAST
+FAST
+FAST
+   ↓
+Writable
+SLOW
+\`\`\`
+
+بدون تنظيم قد تتراكم chunks في الذاكرة.
+
+\`pipe()\` تعمل مع Stream backpressure mechanism بحيث يمكن إبطاء القراءة مؤقتًا عندما لا يستطيع الـ Writable استهلاك البيانات بسرعة كافية.
+
+Mental model:
+
+\`\`\`text
+Readable sends data
+       ↓
+Writable buffer is okay?
+       │
+       ├── Yes → continue
+       │
+       └── No  → pause / wait
+                    ↓
+                 drain
+                    ↓
+                 resume
+\`\`\`
+
+لا تحتاج عادة لإدارة هذه التفاصيل يدويًا عند استخدام \`pipe()\`.
+
+### pipe() مع أكثر من Stream
+
+يمكن ربط Streams متعددة معًا، مثل:
+
+\`\`\`text
+File
+ ↓
+Read Stream
+ ↓
+Compression Stream
+ ↓
+Write Stream
+ ↓
+Compressed File
+\`\`\`
+
+مثال:
+
+\`\`\`js
+const fs = require("node:fs");
+const zlib = require("node:zlib");
+
+const readStream = fs.createReadStream("data.txt");
+const gzip = zlib.createGzip();
+const writeStream = fs.createWriteStream("data.txt.gz");
+
+readStream
+  .pipe(gzip)
+  .pipe(writeStream);
+\`\`\`
+
+هنا:
+
+\`\`\`text
+data.txt
+   ↓
+Readable
+   ↓
+gzip Transform Stream
+   ↓
+Writable
+   ↓
+data.txt.gz
+\`\`\`
+
+هذا يسمى **Stream Pipeline**.
+
+### ملاحظة مهمة: pipe() وpipeline()
+
+\`pipe()\` ممتازة للفهم والاستخدامات البسيطة، لكن عند تركيب عدة Streams يفضّل كثيرًا استخدام \`pipeline()\` من \`node:stream\` لأنها تساعد على إدارة الأخطاء وإغلاق الـ streams بشكل أكثر أمانًا.
+
+مثال:
+
+\`\`\`js
+const fs = require("node:fs");
+const { pipeline } = require("node:stream");
+
+pipeline(
+  fs.createReadStream("input.txt"),
+  fs.createWriteStream("output.txt"),
+  (err) => {
+    if (err) {
+      console.error("Pipeline failed:", err);
+      return;
+    }
+
+    console.log("Pipeline finished");
+  }
+);
+\`\`\`
+
+احفظ الفرق الذهني:
+
+\`\`\`text
+pipe()
+= connect streams
+
+pipeline()
+= connect streams + stronger error/cleanup handling
+\`\`\`
+
+### الخلاصة
+
+\`pipe()\` تنقل البيانات تدريجيًا من Readable Stream إلى Writable Stream بدون تحميل البيانات كلها في الذاكرة، وتعمل مع آلية Backpressure للتحكم في سرعة التدفق.
 # 69. Backpressure
 
 لو producer ينتج data أسرع من consumer فقد تمتلئ الذاكرة. Streams لديها mechanism يسمى **Backpressure** لموازنة سرعة producer مع consumer.

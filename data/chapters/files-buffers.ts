@@ -422,9 +422,393 @@ fs.writeFileSync(
 );
 \`\`\`
 
-## 59. JSON.parse وJSON.stringify
+## 59. JSON.parse() وJSON.stringify()
 
-\`JSON.parse()\` تحول JSON String إلى JavaScript Object أو Array. \`JSON.stringify()\` تحول Object إلى Text صالح للكتابة في ملف JSON. استخدام \`JSON.stringify(users, null, 2)\` يجعل الملف مرتبًا وأسهل في القراءة.
+عند التعامل مع JSON في Node.js يوجد تحويلان أساسيان يجب أن تفرق بينهما جيدًا:
+
+```text
+JSON Text
+   ↓ JSON.parse()
+JavaScript Value
+   ↓ JSON.stringify()
+JSON Text
+```
+
+### أولًا: JSON.parse()
+
+`JSON.parse()` تستخدم عندما يكون لديك **JSON مكتوب كنص String** وتريد تحويله إلى قيمة JavaScript تستطيع التعامل معها، مثل Object أو Array.
+
+مثال:
+
+```js
+const jsonText = '{"name":"Osama","age":28}';
+
+console.log(typeof jsonText); // string
+
+const user = JSON.parse(jsonText);
+
+console.log(user);
+console.log(user.name);       // Osama
+console.log(typeof user);     // object
+```
+
+قبل `JSON.parse()`:
+
+```text
+'{"name":"Osama","age":28}'
+            ↓
+          String
+```
+
+بعدها:
+
+```text
+{
+  name: "Osama",
+  age: 28
+}
+        ↓
+JavaScript Object
+```
+
+القاعدة:
+
+> `JSON.parse()` = JSON String → JavaScript Value
+
+### لماذا نحتاج JSON.parse() عند قراءة JSON File؟
+
+عندما تقرأ ملفًا باستخدام encoding مثل `utf8`:
+
+```js
+const data = fs.readFileSync("users.json", "utf8");
+```
+
+القيمة الموجودة في `data` هي **String**، حتى لو كان شكل النص داخل الملف Array أو Object.
+
+مثال ملف:
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Ali"
+  }
+]
+```
+
+بعد القراءة:
+
+```js
+const data = fs.readFileSync("users.json", "utf8");
+
+console.log(typeof data); // string
+```
+
+لا يمكنك التعامل معه كـ Array مباشرة:
+
+```js
+data.push({ id: 2, name: "Osama" });
+```
+
+هذا خطأ لأن `data` String وليس Array.
+
+يجب أولًا:
+
+```js
+const users = JSON.parse(data);
+
+users.push({
+  id: 2,
+  name: "Osama",
+});
+```
+
+الآن `users` أصبحت JavaScript Array فعلية.
+
+### ماذا لو JSON غير صحيح؟
+
+`JSON.parse()` قد ترمي `SyntaxError` إذا كان النص ليس JSON صالحًا.
+
+مثال:
+
+```js
+const invalidJson = '{"name":"Osama",}';
+
+JSON.parse(invalidJson);
+```
+
+المشكلة هي الـ trailing comma.
+
+لذلك مع البيانات غير المضمونة استخدم error handling:
+
+```js
+try {
+  const data = JSON.parse(jsonText);
+  console.log(data);
+} catch (error) {
+  console.error("Invalid JSON");
+}
+```
+
+---
+
+### ثانيًا: JSON.stringify()
+
+`JSON.stringify()` تعمل في الاتجاه العكسي.
+
+تأخذ JavaScript Value مثل Object أو Array وتحولها إلى **JSON String**.
+
+مثال:
+
+```js
+const user = {
+  name: "Osama",
+  age: 28,
+};
+
+const jsonText = JSON.stringify(user);
+
+console.log(jsonText);
+console.log(typeof jsonText);
+```
+
+الناتج:
+
+```text
+{"name":"Osama","age":28}
+
+string
+```
+
+القاعدة:
+
+> `JSON.stringify()` = JavaScript Value → JSON String
+
+### لماذا نحتاج JSON.stringify() عند الكتابة في ملف؟
+
+لنفترض أن لديك:
+
+```js
+const users = [
+  { id: 1, name: "Ali" },
+  { id: 2, name: "Osama" },
+];
+```
+
+هذه JavaScript Array داخل الذاكرة.
+
+حتى تحفظها كـ JSON file نحولها أولًا إلى text:
+
+```js
+const jsonText = JSON.stringify(users);
+
+fs.writeFileSync(
+  "users.json",
+  jsonText,
+  "utf8"
+);
+```
+
+المسار الذهني:
+
+```text
+JavaScript Array/Object
+        ↓
+ JSON.stringify()
+        ↓
+     JSON String
+        ↓
+ fs.writeFileSync()
+        ↓
+      JSON File
+```
+
+### لماذا نستخدم JSON.stringify(value, null, 2)؟
+
+إذا كتبت:
+
+```js
+JSON.stringify(users);
+```
+
+ستحصل غالبًا على JSON في سطر واحد:
+
+```json
+[{"id":1,"name":"Ali"},{"id":2,"name":"Osama"}]
+```
+
+هذا صالح تمامًا، لكنه أقل راحة للإنسان أثناء القراءة.
+
+لذلك نستخدم:
+
+```js
+JSON.stringify(users, null, 2);
+```
+
+فتصبح النتيجة:
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Ali"
+  },
+  {
+    "id": 2,
+    "name": "Osama"
+  }
+]
+```
+
+معنى arguments:
+
+```js
+JSON.stringify(value, replacer, space);
+```
+
+في:
+
+```js
+JSON.stringify(users, null, 2);
+```
+
+- `users`: القيمة التي نريد تحويلها.
+- `null`: لا نستخدم replacer لتصفية أو تعديل properties.
+- `2`: استخدم مسافتين indentation لتنسيق JSON.
+
+> الـ `2` تؤثر على شكل النص وقراءته فقط، وليس على معنى البيانات.
+
+### الدورة الكاملة مع JSON File
+
+هذا هو الـ workflow المهم الذي يجب حفظه بالفهم:
+
+```text
+JSON File
+   ↓
+fs.readFile / readFileSync
+   ↓
+String
+   ↓
+JSON.parse()
+   ↓
+JavaScript Array / Object
+   ↓
+Read / Modify / Add / Delete
+   ↓
+JSON.stringify()
+   ↓
+String
+   ↓
+fs.writeFile / writeFileSync
+   ↓
+JSON File
+```
+
+مثال كامل:
+
+```js
+const fs = require("node:fs");
+
+const text = fs.readFileSync(
+  "users.json",
+  "utf8"
+);
+
+const users = JSON.parse(text);
+
+users.push({
+  id: 2,
+  name: "Osama",
+});
+
+const updatedJson = JSON.stringify(
+  users,
+  null,
+  2
+);
+
+fs.writeFileSync(
+  "users.json",
+  updatedJson,
+  "utf8"
+);
+```
+
+### JSON ليس هو JavaScript Object
+
+هذه من أهم النقاط:
+
+```js
+const userObject = {
+  name: "Osama",
+};
+```
+
+هذا **JavaScript Object**.
+
+أما:
+
+```js
+const jsonText = '{"name":"Osama"}';
+```
+
+فهذا **String يحتوي JSON text**.
+
+لذلك لا تستخدم المصطلحين كأنهما شيء واحد:
+
+```text
+JavaScript Object ≠ JSON String
+```
+
+لكن يمكنك التحويل بينهما:
+
+```text
+JSON String
+   ↓ parse
+JavaScript Object
+   ↓ stringify
+JSON String
+```
+
+### قيم لا يتعامل معها JSON مثل JavaScript تمامًا
+
+JSON format أبسط من JavaScript objects.
+
+مثلًا properties التي قيمتها `undefined` أو Function لا تُحفظ كـ JSON property بالشكل الطبيعي:
+
+```js
+const data = {
+  name: "Osama",
+  value: undefined,
+  greet() {
+    console.log("Hello");
+  },
+};
+
+console.log(JSON.stringify(data));
+```
+
+ستكون النتيجة تقريبًا:
+
+```json
+{"name":"Osama"}
+```
+
+أيضًا `BigInt` لا يمكن تحويله مباشرة باستخدام `JSON.stringify()` بدون معالجة خاصة.
+
+### الخلاصة السريعة
+
+| Function | Input | Output | الاستخدام |
+|---|---|---|---|
+| `JSON.parse()` | JSON String | JavaScript Value | عندما تقرأ JSON وتريد استخدام البيانات في الكود |
+| `JSON.stringify()` | JavaScript Value | JSON String | عندما تريد إرسال أو حفظ البيانات بصيغة JSON |
+
+احفظها بهذه الصورة:
+
+```text
+parse     = Text → JavaScript
+stringify = JavaScript → Text
+```
 
 ## أسئلة مراجعة
 

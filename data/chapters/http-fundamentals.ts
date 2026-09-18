@@ -8,6 +8,33 @@ export const httpFundamentalsChapter: StudyChapter = {
   readingTime: "55 دقيقة",
   keywords: ["HTTP", "Server", "Request", "Response", "Port", "Status Code", "Headers", "Methods", "Routing", "node:http"],
   content: String.raw`
+# قبل أن تبدأ: Mental Design للدرس كله
+
+هذا الدرس يربط الشبكة بالكود الذي كتبته في Node. السؤال الرئيسي: **ماذا يحدث من لحظة إرسال Client للطلب حتى استلام Response؟**
+
+\`\`\`text
+Client
+  ↓ HTTP Request
+IP + Port
+  ↓
+Operating System / Network
+  ↓
+Node http Server
+  ↓
+req + res
+  ↓
+Method + URL + Headers + Body
+  ↓
+Routing / Logic
+  ↓
+Status + Headers + Body
+  ↓ HTTP Response
+Client
+\`\`\`
+
+كل موضوع في الدرس هو جزء من هذه الرحلة: Port يحدد الخدمة، req يمثل الطلب، res يبني الرد، Method/URL يحددان المقصود، Status/Headers/Body يصفون النتيجة.
+
+
 # 178. ما هو HTTP Server؟
 
 عندما تفتح موقعًا في Browser فالمتصفح يعمل كـ **Client** ويرسل HTTP Request إلى Server. السيرفر يستقبل الطلب، يعالجه، ثم يرسل HTTP Response.
@@ -447,6 +474,27 @@ Network → OS → Node HTTP Server
                 ▼
           Browser / Client
 \`\`\`
+
+## كيف تربط أجزاء الدرس معًا؟
+
+| المفهوم | مكانه في Request/Response lifecycle |
+|---|---|
+| Client | يبدأ الطلب |
+| IP | يحدد الجهاز/الواجهة |
+| Port | يحدد الخدمة داخل الجهاز |
+| http.createServer | نقطة استقبال HTTP في Node |
+| req | الطلب الداخل |
+| res | الرد الذي تبنيه |
+| Method | نوع العملية المطلوبة |
+| Path/Query | الـ resource والparameters |
+| Headers | metadata عن الطلب/الرد |
+| Body | البيانات الفعلية عند وجودها |
+| Status Code | نتيجة المعالجة |
+| Routing | اختيار handler المناسب |
+| Request Stream | طريقة وصول body تدريجيًا |
+
+> فكر دائمًا: **Request in → Parse intent/data → Run logic → Build response → Response out**.
+
 
 ## أسئلة مراجعة
 

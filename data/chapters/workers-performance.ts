@@ -8,6 +8,30 @@ export const workersPerformanceChapter: StudyChapter = {
   readingTime: "45 دقيقة",
   keywords: ["Worker Threads", "Child Process", "CPU-bound", "Event Loop Lag", "Latency", "Throughput"],
   content: String.raw`
+# قبل أن تبدأ: Mental Design للدرس كله
+
+هذا الدرس يجيب عن سؤال هندسي: **إذا كان العمل ثقيلًا، أين يجب أن أنفذه حتى لا أضر السيرفر؟**
+
+\`\`\`text
+Workload
+   ↓
+What kind?
+   │
+   ├── I/O-bound
+   │     ↓
+   │ Event Loop + OS / libuv async model
+   │
+   └── CPU-bound JavaScript
+         ↓
+   Worker Thread / Child Process / Queue
+
+Then measure:
+Latency + Throughput + Event Loop Lag + CPU
+\`\`\`
+
+الدرس يجمع ما قبله: Main Thread، Thread Pool، Event Loop، ثم يضيف Worker Threads وChild Processes لكي تختار الأداة الصحيحة.
+
+
 # 149. Worker Threads
 
 عندما يكون لديك JavaScript CPU-intensive فإن الحل ليس أن تحاول تحويله إلى callback فقط. Node توفر:
@@ -385,6 +409,23 @@ Node.js
     ├── Job queues
     └── Separate services
 \`\`\`
+
+## كيف تربط أجزاء الدرس معًا؟
+
+| المشكلة/الأداة | متى تستخدمها أو ماذا تقيس؟ |
+|---|---|
+| I/O-bound work | async I/O model مناسب غالبًا |
+| CPU-bound JS | خطر على Main Thread |
+| Worker Thread | JavaScript CPU-heavy داخل thread منفصل |
+| libuv Thread Pool | عمليات native محددة، وليس بديل Worker Threads |
+| Child Process | isolation أقوى وعملية مستقلة |
+| Event Loop Lag | هل Main Thread متأخرة؟ |
+| Latency | زمن request واحد |
+| Throughput | عدد العمليات في وحدة الزمن |
+| Benchmark | يثبت هل التعديل حسن الأداء فعلاً |
+
+> القرار الصحيح يبدأ بـ **Identify workload → Choose execution model → Measure impact**.
+
 
 # 163. أسئلة Interview ومراجعة شاملة
 

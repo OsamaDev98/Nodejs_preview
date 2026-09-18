@@ -8,6 +8,24 @@ export const microtasksChapter: StudyChapter = {
   readingTime: "55 دقيقة",
   keywords: ["process.nextTick", "Promise", "queueMicrotask", "setImmediate", "starvation", "ordering"],
   content: String.raw`
+# قبل أن تبدأ: Mental Design للدرس كله
+
+بعد أن فهمت Event Loop، هذا الدرس يضيف سؤالًا جديدًا: **إذا كان عندي أكثر من callback جاهزة، من له الأولوية؟**
+
+\`\`\`text
+Current JavaScript finishes
+        ↓
+process.nextTick queue
+        ↓
+Promise / queueMicrotask microtasks
+        ↓
+Event Loop continues
+timers / poll / check ...
+\`\`\`
+
+هذا ترتيب ذهني مبسط للسياقات المعتادة في Node، وليس قانونًا مطلقًا لكل top-level ESM scenario. الهدف هو فهم priority وليس حفظ output بلا سياق.
+
+
 # 127. Microtasks
 
 لفهم ترتيب التنفيذ في Node لا يكفي أن تحفظ phases الخاصة بـ Event Loop. يوجد أيضًا Microtasks، كما أن \`process.nextTick()\` له queue وسلوك خاص في Node.
@@ -478,6 +496,22 @@ B
 \`\`\`
 
 لأن الجزء بعد \`await\` يكمل في microtask.
+
+## كيف تربط أجزاء الدرس معًا؟
+
+| المفهوم | دوره في Scheduling |
+|---|---|
+| Synchronous code | يعمل أولًا حتى يفرغ الـ stack |
+| process.nextTick | queue خاصة بـ Node ذات أولوية عالية |
+| Promise microtasks | then/catch/finally وawait continuation |
+| queueMicrotask | جدولة microtask مباشرة |
+| Timers | Event Loop work وليست microtask |
+| setImmediate | check phase |
+| Starvation | priority work يمنع Event Loop من التقدم |
+| async/await | Promise-based scheduling وليس threads |
+
+> فكر في الدرس كطبقات أولوية: **Current Stack → nextTick → Microtasks → Event Loop phases** مع الانتباه لاختلاف السياق.
+
 
 ## أسئلة مراجعة
 

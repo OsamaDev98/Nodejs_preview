@@ -8,6 +8,37 @@ export const streamsNpmChapter: StudyChapter = {
   readingTime: "44 دقيقة",
   keywords: ["Streams", "Readable", "Writable", "Backpressure", "npm", "package.json", "node_modules"],
   content: String.raw`
+# قبل أن تبدأ: Mental Design للدرس كله
+
+الدرس الرابع فيه جزآن. الرابط بينهما أن كلاهما يحل مشكلة **إدارة شيء كبير بكفاءة**: Streams تدير تدفق البيانات، وnpm يدير تدفق واعتماديات الـ packages.
+
+\`\`\`text
+PART 1 — DATA FLOW
+Large Data
+   ↓
+Readable Stream
+   ↓ chunks
+pipe / pipeline
+   ↓
+Writable Stream
+   ↓
+Backpressure controls flow
+
+PART 2 — PACKAGE FLOW
+Your Project
+   ↓
+package.json
+   ↓
+npm Registry
+   ↓
+node_modules
+   ↓
+package-lock.json records resolved tree
+\`\`\`
+
+في الجزء الأول اسأل: كيف تتحرك البيانات بدون تحميلها كلها؟ وفي الجزء الثاني اسأل: كيف يعرف المشروع ما الحزم التي يحتاجها وكيف يثبتها بنفس النسخ؟
+
+
 # 60. Streams
 
 Stream تعني التعامل مع البيانات تدريجيًا على شكل **chunks** بدل تحميل البيانات كلها مرة واحدة في الذاكرة.
@@ -728,6 +759,27 @@ myapp --version
 \`\`\`
 
 وهي مثال ممتاز على Third-party package.
+
+## كيف تربط أجزاء الدرس معًا؟
+
+| المفهوم | دوره |
+|---|---|
+| Stream | معالجة البيانات تدريجيًا |
+| Chunk | جزء من البيانات |
+| Readable | مصدر البيانات |
+| Writable | وجهة البيانات |
+| pipe | ربط المصدر بالوجهة |
+| Backpressure | موازنة سرعة producer وconsumer |
+| Memory Efficient | الاحتفاظ بكمية محدودة من البيانات في RAM |
+| Memory Hungry | تحميل كمية كبيرة من البيانات في RAM |
+| npm | إدارة packages والscripts |
+| Registry | مكان نشر واسترجاع packages |
+| package.json | تعريف المشروع واعتمادياته |
+| package-lock.json | تثبيت الشجرة والنسخ resolved |
+| node_modules | الملفات المثبتة فعليًا |
+
+> في Streams فكر **Source → Chunks → Flow Control → Destination**، وفي npm فكر **Manifest → Registry → Install → Lock**.
+
 
 ## أسئلة مراجعة
 

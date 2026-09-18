@@ -8,6 +8,24 @@ export const foundationsChapter: StudyChapter = {
   readingTime: "41 دقيقة",
   keywords: ["Node.js", "Runtime", "V8", "REPL", "Browser", "globalThis", "Cross-platform", "libuv", "Node APIs"],
   content: String.raw`
+# قبل أن تبدأ: Mental Design للدرس كله
+
+هذا الدرس يجيب عن سؤال واحد: **ما هي Node.js، وما الذي يحدث لكود JavaScript عندما يعمل خارج المتصفح؟**
+
+\`\`\`text
+JavaScript Language
+       ↓
+Node.js Runtime
+       │
+       ├── V8 → executes JavaScript
+       ├── Node APIs → fs / http / process / path ...
+       ├── libuv → async I/O / Event Loop / Thread Pool
+       └── C/C++ + OS → real system capabilities
+\`\`\`
+
+كل جزء في الدرس يرجع لهذا الرسم: Runtime تشرح أين يعمل الكود، V8 تشرح من ينفذه، Node APIs تشرح ما الإمكانيات الإضافية، وBrowser vs Node يشرح لماذا بعض APIs موجودة هنا وغير موجودة هناك.
+
+
 # 1. ما هو Node.js؟
 
 أهم تعريف يجب تثبيته:
@@ -672,6 +690,24 @@ Node.js = Runtime Environment
 \`\`\`
 
 ولا تعتمد على \`this\` للوصول إلى Global Object؛ استخدم \`globalThis\`.
+
+## كيف تربط أجزاء الدرس معًا؟
+
+| الفكرة | دورها في الصورة الكبيرة |
+|---|---|
+| JavaScript | اللغة التي تكتب بها الكود |
+| Runtime | البيئة التي تشغّل اللغة وتوفر APIs |
+| V8 | Parsing + JIT + Execution + Memory + GC |
+| Node APIs | الإمكانيات التي لا توفرها JavaScript وحدها |
+| libuv | تنسيق async I/O وEvent Loop |
+| C/C++ bindings | ربط JavaScript بالطبقات native |
+| Operating System | الملفات والشبكة والـ processes والموارد الحقيقية |
+| Browser APIs | APIs خاصة بالمتصفح مثل DOM |
+| globalThis | الوصول القياسي إلى global object |
+| REPL | تجربة JavaScript وNode APIs مباشرة |
+
+> لو فهمت الفرق بين **Language → Runtime → Engine → APIs → OS** فأنت فهمت أساس Node.js الذي ستبني عليه بقية الدروس.
+
 
 ## أسئلة مراجعة
 

@@ -8,6 +8,33 @@ export const filesBuffersChapter: StudyChapter = {
   readingTime: "58 دقيقة",
   keywords: ["fs", "readFile", "readFileSync", "Buffer", "UTF-8", "JSON", "async/await"],
   content: String.raw`
+# قبل أن تبدأ: Mental Design للدرس كله
+
+الدرس الثالث يربط ثلاثة أشياء تبدو منفصلة لكنها في الحقيقة سلسلة واحدة: **File System → Bytes/Encoding → Structured Data**.
+
+\`\`\`text
+File on Disk
+    ↓
+fs reads bytes
+    ↓
+Buffer
+    ↓
+Encoding / Decoding
+    ↓
+JavaScript String
+    ↓
+JSON.parse()
+    ↓
+JavaScript Object / Array
+    ↓ modify
+JSON.stringify()
+    ↓
+String → Encoding → Bytes → File
+\`\`\`
+
+وفي نفس الوقت يجب أن تختار: هل العملية Sync فتعمل Blocking، أم Async فتسمح للـ Main Thread بمتابعة العمل؟
+
+
 # 36. File System Module — fs
 
 Node يوفر Built-in Module اسمه \`node:fs\` للتعامل مع File System: قراءة الملفات، إنشاء الملفات، الكتابة، الإضافة، الحذف، إنشاء directories، إعادة التسمية، قراءة metadata، والتعامل مع streams.
@@ -809,6 +836,23 @@ console.log(JSON.stringify(data));
 parse     = Text → JavaScript
 stringify = JavaScript → Text
 \`\`\`
+
+## كيف تربط أجزاء الدرس معًا؟
+
+| المفهوم | اسأل نفسك ماذا يفعل؟ |
+|---|---|
+| fs | يتعامل مع الملفات |
+| Sync API | ينتظر النتيجة ويحجز التنفيذ الحالي |
+| Async API | يبدأ العملية ويعيد النتيجة لاحقًا |
+| Callback / Promise | طريقة استلام النتيجة async |
+| Buffer | bytes خام في الذاكرة |
+| Encoding | قواعد Characters ↔ Bytes |
+| UTF-8 | encoding شائع للنصوص وUnicode |
+| JSON.parse | JSON text → JavaScript value |
+| JSON.stringify | JavaScript value → JSON text |
+
+> المسار الكامل المهم: **Disk → Bytes → Buffer → Decode → String → Parse → Object**، والعكس عند الكتابة.
+
 
 ## أسئلة مراجعة
 

@@ -4,6 +4,7 @@ import { Children, isValidElement, useMemo, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { reviewAnswers } from "@/data/review-answers";
+import { lessonSummaries } from "@/data/lesson-summaries";
 
 function markReviewQuestions(markdown: string) {
   const headings = [
@@ -62,10 +63,34 @@ export function MarkdownLesson({
   content: string;
   chapterId: string;
 }) {
-  const normalizedContent = useMemo(
-    () => markReviewQuestions(content.replaceAll("\\`", "`")),
-    [content]
-  );
+  const normalizedContent = useMemo(() => {
+    const raw = content.replaceAll("\\`", "`");
+    const summary = lessonSummaries[chapterId];
+
+    if (!summary) return markReviewQuestions(raw);
+
+    const reviewHeadings = [
+      "## أسئلة مراجعة",
+      "# 163. أسئلة Interview ومراجعة شاملة",
+    ];
+
+    let reviewStart = -1;
+    for (const heading of reviewHeadings) {
+      const index = raw.lastIndexOf(heading);
+      if (index > reviewStart) reviewStart = index;
+    }
+
+    const summarySection =
+      "\n\n## ملخص الدرس للمراجعة\n\n" + summary.trim() + "\n\n";
+
+    const withSummary =
+      reviewStart === -1
+        ? raw.trimEnd() + summarySection
+        : raw.slice(0, reviewStart) + summarySection + raw.slice(reviewStart);
+
+    return markReviewQuestions(withSummary);
+  }, [content, chapterId]);
+
   const answers = reviewAnswers[chapterId] ?? [];
 
   return (

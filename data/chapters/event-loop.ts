@@ -8,6 +8,29 @@ export const eventLoopChapter: StudyChapter = {
   readingTime: "60 دقيقة",
   keywords: ["Event Loop", "timers", "poll", "check", "setTimeout", "setImmediate", "callbacks"],
   content: String.raw`
+# قبل أن تبدأ: Mental Design للدرس كله
+
+هذا الدرس لا يحتاج حفظ أسماء phases منفصلة. المطلوب أن تفهم: **كيف ترجع الأعمال الجاهزة إلى JavaScript ومتى تُنفذ؟**
+
+\`\`\`text
+Synchronous JavaScript
+        ↓
+Call Stack becomes free
+        ↓
+Event Loop checks ready work
+        ↓
+timers / pending / poll / check / close
+        ↓
+Callback enters JavaScript
+        ↓
+V8 executes callback
+        ↓
+repeat
+\`\`\`
+
+اربط هذا بالدرس الخامس: OS أو Thread Pool تنجز العمل، ثم Event Loop هي التي تساعد في إدخال callback إلى JavaScript في الوقت المناسب.
+
+
 # 105. Event Loop
 
 تعريف عملي:
@@ -407,6 +430,24 @@ B
                                 ↓
                            Call Stack
 \`\`\`
+
+## كيف تربط أجزاء الدرس معًا؟
+
+| المفهوم | مكانه في الدورة |
+|---|---|
+| Call Stack | ما تنفذه JavaScript الآن |
+| Event Loop | ينسق ما الذي يمكن تشغيله لاحقًا |
+| Timers | callbacks الخاصة بالـ setTimeout/setInterval |
+| Poll | كثير من I/O events/callbacks |
+| Check | setImmediate callbacks |
+| Close | close callbacks |
+| Concurrency | تقدم عدة أعمال عبر نفس الفترة |
+| Parallelism | تنفيذ فعلي في نفس اللحظة على threads/cores مختلفة |
+| CPU-heavy JS | يمنع Event Loop من التقدم |
+| Event Loop Lag | تأخير callbacks لأن Main Thread مشغولة |
+
+> اربطها بهذه الجملة: **Work completes elsewhere → Event Loop notices readiness → callback waits for free JS thread → V8 executes it**.
+
 
 ## أسئلة مراجعة
 

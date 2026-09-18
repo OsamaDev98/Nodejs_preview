@@ -5,105 +5,232 @@ export const libuvThreadpoolChapter: StudyChapter = {
   number: 5,
   title: "libuv وThread Pool وAsync I/O",
   subtitle: "كيف ينسق Node بين JavaScript وOS والـ worker threads.",
-  readingTime: "55 دقيقة",
-  keywords: ["libuv", "Thread Pool", "Async I/O", "epoll", "kqueue", "IOCP", "pbkdf2", "DNS"],
+  readingTime: "70 دقيقة",
+  keywords: ["libuv", "Thread Pool", "Async I/O", "Offloading", "epoll", "kqueue", "IOCP", "pbkdf2", "DNS"],
   content: String.raw`
+# قبل أن تبدأ: Mental Design للدرس كله
+
+هذا الدرس يصبح سهلًا عندما تربط كل جزء بالسؤال الأساسي التالي:
+
+> عندما أستدعي Async API في Node.js، **من الذي يقوم بالعمل فعليًا بينما JavaScript تكمل؟**
+
+الإجابة ليست دائمًا واحدة. أحيانًا يكون **Operating System**، وأحيانًا يكون **libuv Thread Pool**.
+
+استخدم هذا الرسم كخريطة للدرس كله:
+
+\`\`\`text
+Your JavaScript Code
+        ↓
+       V8
+Main JavaScript Thread
+        ↓
+Node API
+fs / net / http / crypto / dns ...
+        ↓
+      libuv
+        ↓
+   What kind of work is it?
+        │
+        ├──────────────────────────────┐
+        │                              │
+        ↓                              ↓
+OS / Kernel async path           libuv Thread Pool
+Network sockets                  File System
+TCP / HTTP / UDP                 Some Crypto
+epoll / kqueue / IOCP            Some DNS
+                                 zlib
+        │                              │
+        └──────────────┬───────────────┘
+                       ↓
+                Operation completes
+                       ↓
+                  Event Loop
+                       ↓
+               Callback is scheduled
+                       ↓
+              Main JavaScript Thread
+                       ↓
+                 V8 runs callback
+\`\`\`
+
+إذن عند دراسة أي API اسأل 4 أسئلة:
+
+1. هل استدعاء JavaScript نفسه Sync أم Async؟
+2. إذا كان Async: هل العمل ينتظر OS/kernel أم يستخدم Thread Pool؟
+3. ماذا يحدث بعد اكتمال العملية؟
+4. متى ترجع النتيجة إلى JavaScript؟
+
+احفظ الفكرة قبل التفاصيل:
+
+\`\`\`text
+V8
+= executes your JavaScript
+
+libuv
+= coordinates asynchronous work
+
+OS
+= handles many network/event-based operations
+
+Thread Pool
+= executes certain operations that need worker threads
+
+Event Loop
+= brings completed work back so callbacks can run
+\`\`\`
+
 # 83. ما هي libuv؟
 
-libuv هي مكتبة C متعددة المنصات توفر abstraction للـ asynchronous I/O وevent loop وعدة وظائف منخفضة المستوى، وهي جزء أساسي من architecture الخاصة بـ Node.js.
+**libuv** هي مكتبة مكتوبة أساسًا بلغة C وتستخدمها Node.js لتوفير جزء كبير من البنية الخاصة بـ asynchronous I/O وEvent Loop وThread Pool والتعامل مع اختلافات أنظمة التشغيل.
 
-بدأ تطويرها أساسًا لخدمة Node.js، لكنها مشروع مستقل.
+لا تعتبر libuv JavaScript library عادية تستوردها في تطبيقك. هي جزء داخلي مهم من Runtime نفسها.
 
-## 84. لماذا Node يحتاج libuv؟
+الصورة:
 
-لأن أنظمة التشغيل مختلفة. Linux لديه mechanisms مثل \`epoll\`، وmacOS/BSD لديه \`kqueue\`، وWindows لديه IOCP.
+\`\`\`text
+Your JavaScript
+      ↓
+Node.js APIs
+      ↓
+libuv
+      ↓
+Operating System
+\`\`\`
 
-بدل أن يتعامل Node مباشرة مع كل OS بشكل مختلف، توفر libuv طبقة abstraction:
+وظيفتها ليست أن "تنفذ كل شيء"، بل أن تساعد Node في **تنسيق** العمليات غير المتزامنة والتعامل مع الـ OS بطريقة موحدة.
+
+# 84. لماذا Node.js يحتاج libuv؟
+
+لأن كل Operating System لديه mechanisms مختلفة للتعامل مع I/O.
+
+أمثلة مشهورة:
+
+\`\`\`text
+Linux        → epoll
+macOS / BSD → kqueue
+Windows      → IOCP
+\`\`\`
+
+لو لم توجد طبقة مثل libuv، لاضطر Node إلى كتابة منطق مختلف جدًا لكل نظام.
+
+libuv تعمل كـ abstraction layer:
 
 \`\`\`text
 Node.js
    ↓
 libuv
    ↓
-OS-specific mechanisms
+┌─────────┬─────────┬─────────┐
+│ Linux   │ macOS   │ Windows │
+│ epoll   │ kqueue  │ IOCP    │
+└─────────┴─────────┴─────────┘
 \`\`\`
 
-## 85. Architecture بشكل أوضح
+إذن كلمة **Cross-platform** هنا مهمة جدًا.
+
+# 85. أين تقع libuv داخل Node Architecture؟
+
+اربط هذا الدرس بالدرس الأول:
 
 \`\`\`text
-          Your JavaScript
-                 │
-                 ↓
-               Node.js
-        ┌────────┴────────┐
-        ↓                 ↓
-       V8               libuv
-        │                 │
-JS execution          Event Loop
-Memory                Async I/O
-GC                    Thread Pool
-                      OS abstraction
-                         │
-                         ↓
-                 Operating System
+                 Node.js Runtime
+                       │
+          ┌────────────┴────────────┐
+          ↓                         ↓
+         V8                       libuv
+          │                         │
+Execute JavaScript            Event Loop
+Call Stack                    Async I/O
+Heap / GC                     Thread Pool
+JIT                           OS abstraction
+          │                         │
+          └────────────┬────────────┘
+                       ↓
+                Operating System
 \`\`\`
 
-## 86. ماذا توفر libuv؟
+المسؤوليات الأساسية:
 
-من الوظائف التي ترتبط بها:
+- **V8**: ينفذ JavaScript.
+- **Node APIs**: تعطيك functions مثل fs.readFile وhttp.createServer.
+- **libuv**: تنظم كثيرًا من الـ async work.
+- **Operating System**: ينفذ أو ينتظر كثيرًا من عمليات I/O الفعلية.
 
-- Event loop.
-- TCP.
-- UDP.
-- TTY.
-- Pipes.
-- File system operations.
-- DNS operations.
-- Thread pool.
-- Signals.
-- Child processes.
-- Timers/integration.
-- IPC.
+# 86. ما معنى Async I/O؟
 
-لكن المهم ليس حفظ القائمة فقط، بل فهم أن العمليات المختلفة لا تسلك نفس المسار.
+I/O تعني Input / Output.
 
-# 87. أكبر خطأ شائع: "Node.js is single-threaded"
+أمثلة:
 
-الجملة ليست دقيقة إذا فهمتها حرفيًا.
+- قراءة ملف.
+- كتابة ملف.
+- استقبال Network data.
+- إرسال HTTP request.
+- DNS lookup.
+- التعامل مع Socket.
+
+عندما نقول **Async I/O** فنحن نقصد أن JavaScript لا تضطر عادة للوقوف منتظرة انتهاء العملية.
+
+مثال:
+
+\`\`\`js
+console.log("A");
+
+fs.readFile("file.txt", () => {
+  console.log("B");
+});
+
+console.log("C");
+\`\`\`
+
+غالبًا:
+
+\`\`\`text
+A
+C
+B
+\`\`\`
+
+لماذا؟ لأن JavaScript بدأت العملية ثم أكملت، وعندما انتهت القراءة عاد callback لاحقًا.
+
+# 87. هل Node.js Single-threaded؟
+
+الجملة "Node.js is single-threaded" تحتاج تصحيح.
 
 الأدق:
 
-> JavaScript code الخاص بك يعمل افتراضيًا على main JavaScript thread واحد في Node process.
+> كود JavaScript الخاص بتطبيقك يعمل افتراضيًا على **Main JavaScript Thread واحد** داخل Node process.
 
-لكن Node process نفسه يحتوي على threads أخرى، مثل:
+لكن Runtime نفسها تستخدم Threads أخرى.
 
 \`\`\`text
-Main JavaScript thread
-V8 helper threads
-libuv thread pool threads
-other internal threads
+Node Process
+│
+├── Main JavaScript Thread
+│     └── V8 runs your JS here
+│
+├── libuv Worker Threads
+│
+├── V8 internal/helper threads
+│
+└── Other runtime threads
 \`\`\`
 
 إذن:
 
 \`\`\`text
-JavaScript execution ≈ single main thread
-Node.js process ≠ one thread only
+Your JS execution
+≈ one main thread
+
+Node process
+≠ one thread only
 \`\`\`
 
-# 88. Main Thread وCall Stack
+# 88. Main JavaScript Thread وCall Stack
 
-الكود العادي:
+الـ Main JavaScript Thread هو المكان الذي ينفذ فيه V8 الكود الرئيسي والـ callbacks.
 
-\`\`\`js
-console.log("A");
-const x = 10 + 20;
-console.log(x);
-\`\`\`
-
-ينفذ على main JavaScript thread ومعه Call Stack.
-
-Stack تعمل LIFO: Last In, First Out.
+مثال:
 
 \`\`\`js
 function one() {
@@ -117,7 +244,7 @@ function two() {
 one();
 \`\`\`
 
-تقريبًا:
+الـ Call Stack تعمل LIFO:
 
 \`\`\`text
 Push one
@@ -133,154 +260,278 @@ Pop two
 Pop one
 \`\`\`
 
-## 89. لماذا Call Stack مهمة؟
+المهم في هذا الدرس: طالما Main Thread مشغولة بكود JavaScript طويل، callbacks الأخرى لن تنفذ عليها.
 
-JavaScript لا تستطيع تنفيذ callback جديدة على نفس thread أثناء stack ما زالت مشغولة بكود synchronous طويل.
+# 89. ما المشكلة لو Main Thread انشغلت؟
 
-\`\`\`js
-while (true) {}
-\`\`\`
-
-هذا يمنع event loop من التقدم، حتى لو كانت هناك async operations انتهت وcallbacksها جاهزة.
-
-# 90. I/O
-
-I/O تعني Input / Output، مثل Reading disk وWriting disk وNetwork requests وDatabase communication وDNS وSockets.
-
-غالبًا هي عمليات بطيئة مقارنة بتنفيذ CPU instruction بسيط.
-
-# 91. Offloading
-
-في Node context المقصود عدم تنفيذ العملية الثقيلة أو المنتظرة مباشرة على JavaScript main thread، وإنما تفويضها إلى OS أو libuv/thread pool عندما يكون ذلك مناسبًا.
-
-\`\`\`text
-JS Thread
-   ↓
-Request async operation
-   ↓
-Offload
-   ↓
-OS / libuv
-   ↓
-JS thread continues
-\`\`\`
-
-# 92. لا تقل إن كل Async operation تذهب إلى Thread Pool
-
-هذه من أهم القواعد.
-
-هناك طريقان أساسيان تقريبًا:
-
-\`\`\`text
-Async operation
-      │
-      ├── OS/kernel event mechanism
-      │
-      └── libuv thread pool
-\`\`\`
-
-ليست كل العمليات async تستخدم thread pool.
-
-# 93. Network I/O
-
-TCP servers وHTTP connections وSockets لا يتم عادة تنفيذ كل request داخل Thread من libuv thread pool.
-
-الاعتماد يكون غالبًا على OS async/event notification mechanisms.
-
-\`\`\`text
-TCP Socket
-   ↓
-Operating System Kernel
-   ↓
-epoll / kqueue / IOCP
-   ↓
-libuv event loop
-   ↓
-callback
-\`\`\`
-
-لهذا السبب عبارة "Node لديه 4 threads إذن يستطيع استقبال 4 requests فقط" خطأ تمامًا.
-
-Node يستطيع إدارة عدد كبير من network connections لأن النموذج ليس one request = one libuv worker thread.
-
-# 94. Thread Pool
-
-libuv لديها Thread Pool. الحجم الافتراضي الشائع تاريخيًا هو 4 workers.
-
-تستخدم هذه workers لبعض الأعمال التي لا يوجد لها async kernel interface موحد مناسب، أو لبعض native operations التي تقوم Node بتفويضها لها.
-
-من أشهر ما يستخدمها:
-
-\`\`\`text
-File system async APIs
-Some DNS operations
-Some crypto operations
-zlib operations
-\`\`\`
-
-# 95. File I/O وThread Pool
-
-كقاعدة تعليمية جيدة لفهم Node/libuv:
+مثال سيئ:
 
 \`\`\`js
-fs.readFile("large.txt", callback);
+const start = Date.now();
+
+while (Date.now() - start < 5000) {
+  // busy CPU work
+}
 \`\`\`
 
-تقريبًا:
+خلال هذه الخمس ثوانٍ، JavaScript callbacks الأخرى تنتظر.
+
+حتى لو انتهت network request أو file read، الـ callback لا تستطيع اقتحام الكود الجاري.
+
+الصورة:
+
+\`\`\`text
+Async operation finishes
+        ↓
+callback ready
+        ↓
+Main Thread busy?
+        │
+        ├── Yes → wait
+        └── No  → execute callback
+\`\`\`
+
+# 90. ما هو Offloading؟
+
+**Offloading** يعني أن Node لا تجعل Main JavaScript Thread تنفذ أو تنتظر كل العمل بنفسها.
+
+بدلًا من ذلك يتم تفويض العملية إلى جهة أخرى مناسبة.
+
+هذه الجهة قد تكون:
+
+\`\`\`text
+Operating System
+or
+libuv Thread Pool
+\`\`\`
+
+الصورة:
 
 \`\`\`text
 Main JS Thread
       ↓
-fs.readFile
+Start async operation
       ↓
-libuv
+Offload
       ↓
-Thread Pool worker
+OS or Thread Pool
       ↓
-File system operation
-      ↓
-completion
-      ↓
-Event Loop
-      ↓
-callback
+Main JS Thread continues
 \`\`\`
+
+هذه هي الفكرة المركزية للدرس.
+
+# 91. أهم Decision Tree في الدرس
+
+عندما ترى Async API لا تقل مباشرة: "ذهبت إلى Thread Pool".
+
+استخدم هذا القرار:
+
+\`\`\`text
+Async operation
+      ↓
+What kind of operation?
+      │
+      ├── Network / socket readiness
+      │        ↓
+      │   OS / Kernel mechanism
+      │   epoll / kqueue / IOCP
+      │
+      └── Certain native work
+               ↓
+         libuv Thread Pool
+         fs / crypto / zlib / some DNS
+\`\`\`
+
+هذا هو الربط الذي كان ناقصًا: **Async هي طريقة سلوك من منظور JavaScript، وليست اسمًا لمسار تنفيذ واحد.**
+
+# 92. المسار الأول: OS / Kernel Async Path
+
+بعض العمليات ممتازة جدًا للـ OS لكي ينتظرها بدون حجز Worker Thread لكل عملية.
+
+أشهر مثال: Network sockets.
+
+\`\`\`text
+JavaScript
+    ↓
+http / net API
+    ↓
+libuv
+    ↓
+Operating System
+    ↓
+socket waits for data
+    ↓
+kernel signals readiness
+    ↓
+libuv Event Loop
+    ↓
+JavaScript callback
+\`\`\`
+
+الفكرة المهمة:
+
+> Network connection لا تحتاج غالبًا Thread Pool worker مخصوص ينتظرها.
+
+# 93. Network I/O: لماذا Node تتحمل اتصالات كثيرة؟
+
+لو كان كل HTTP request يحتاج Thread مستقل، كان عدد الاتصالات مرتبطًا مباشرة بعدد Threads.
+
+لكن النموذج المعتاد في Node مختلف:
+
+\`\`\`text
+1000 sockets
+     ↓
+OS monitors readiness
+     ↓
+not 1000 libuv worker threads
+\`\`\`
+
+لذلك العبارة التالية خطأ:
+
+\`\`\`text
+Thread Pool = 4
+therefore
+Node handles only 4 requests
+\`\`\`
+
+HTTP/TCP socket I/O تعتمد غالبًا على event notification من الـ OS.
+
+# 94. المسار الثاني: libuv Thread Pool
+
+بعض العمليات لا تعتمد على نفس evented kernel mechanism الخاصة بالشبكات، أو تحتاج Native CPU work.
+
+هنا تستخدم Node/libuv مجموعة Worker Threads.
+
+تخيلها كفريق عمال:
+
+\`\`\`text
+              Thread Pool
+      ┌────────┬────────┬────────┬────────┐
+      │Worker 1│Worker 2│Worker 3│Worker 4│
+      └────────┴────────┴────────┴────────┘
+\`\`\`
+
+الحجم الافتراضي الشائع هو 4 Workers.
+
+أعمال مشهورة تستخدم هذا pool:
+
+- كثير من Async File System APIs.
+- بعض Crypto APIs مثل pbkdf2.
+- zlib.
+- بعض DNS work مثل dns.lookup.
+
+مهم: هذه **قائمة أمثلة وليست قاعدة أن كل async API تستخدم pool**.
+
+# 95. مثال File I/O من البداية للنهاية
+
+الآن اربط كل الأجزاء:
+
+\`\`\`js
+const fs = require("node:fs");
+
+console.log("A");
+
+fs.readFile("users.json", "utf8", (err, data) => {
+  console.log("B");
+});
+
+console.log("C");
+\`\`\`
+
+المسار التقريبي:
+
+\`\`\`text
+1. V8 executes JavaScript
+        ↓
+2. fs.readFile() is called
+        ↓
+3. Node/libuv receives request
+        ↓
+4. File work goes to Thread Pool
+        ↓
+5. Main JS Thread continues
+        ↓
+6. console.log("C") runs
+        ↓
+7. Worker finishes file operation
+        ↓
+8. Completion reaches Event Loop
+        ↓
+9. callback becomes runnable
+        ↓
+10. V8 executes callback
+        ↓
+11. console.log("B")
+\`\`\`
+
+لذلك غالبًا ترى:
+
+\`\`\`text
+A
+C
+B
+\`\`\`
+
+هذه السلسلة تربط V8 + Node API + libuv + Thread Pool + Event Loop.
 
 # 96. UV_THREADPOOL_SIZE
 
-يمكن تغيير حجم thread pool باستخدام environment variable:
+يمكن تغيير عدد libuv worker threads باستخدام environment variable:
+
+Linux/macOS:
 
 \`\`\`bash
 UV_THREADPOOL_SIZE=8 node app.js
 \`\`\`
 
-وعلى PowerShell:
+PowerShell:
 
 \`\`\`powershell
 $env:UV_THREADPOOL_SIZE=8
 node app.js
 \`\`\`
 
-الأفضل ضبطها قبل تشغيل Node لأن بعض أجزاء Node قد تبدأ باستخدام thread pool قبل تعديل القيمة داخل الكود.
+يفضل ضبطها قبل تشغيل التطبيق، وليس بعد بدء استخدام pool.
 
-## 97. لماذا زيادة Thread Pool ليست دائمًا أفضل؟
+لكن لا تعتبرها "زر سرعة".
 
-إذا كان لديك 4 CPU cores ووضعت \`UV_THREADPOOL_SIZE=500\` فهذا لا يعني أن التطبيق أصبح أسرع 125 مرة.
+# 97. لماذا زيادة Thread Pool ليست دائمًا أفضل؟
+
+لنفترض:
+
+\`\`\`text
+CPU cores = 4
+Thread Pool = 500
+\`\`\`
+
+هذا لا يعني أداء أفضل 125 مرة.
 
 قد تحصل على:
 
-- Context switching.
+- Context switching أكثر.
 - Memory overhead.
 - CPU contention.
-- Worse performance.
+- Scheduling overhead.
+- Latency أسوأ.
 
-إذن الحجم قرار tuning ويجب قياسه بالـ benchmarks وليس التخمين.
+الصحيح:
 
-# 98. CPU Tasks وPBKDF2
+\`\`\`text
+measure
+↓
+benchmark
+↓
+change
+↓
+measure again
+\`\`\`
 
-بعض العمليات تحتاج CPU computation كبير مثل Password key derivation وCompression وEncryption وHashing وImage processing وHuge calculations.
+# 98. CPU-heavy Native Work: pbkdf2Sync vs pbkdf2
 
-### pbkdf2Sync
+هنا يوجد فرق مهم جدًا بين **CPU-heavy JavaScript** و**CPU-heavy native async API**.
+
+أولًا:
 
 \`\`\`js
 const crypto = require("node:crypto");
@@ -294,15 +545,21 @@ crypto.pbkdf2Sync(
 );
 \`\`\`
 
-هذه Synchronous وبالتالي تحجز main JavaScript thread أثناء الحساب.
+هذه synchronous، لذلك Main JavaScript Thread تنتظرها.
 
-### pbkdf2 Async
+\`\`\`text
+Main JS Thread
+      ↓
+pbkdf2Sync
+      ↓
+CPU calculation
+      ↓
+Main Thread blocked
+\`\`\`
+
+أما:
 
 \`\`\`js
-const crypto = require("node:crypto");
-
-const start = performance.now();
-
 crypto.pbkdf2(
   "secret",
   "salt",
@@ -310,16 +567,32 @@ crypto.pbkdf2(
   64,
   "sha512",
   () => {
-    console.log("End", performance.now() - start);
+    console.log("done");
   }
 );
 \`\`\`
 
-النسخة async تستطيع استخدام libuv thread pool.
+فالنسخة async تستطيع offload العمل إلى libuv Thread Pool.
 
-# 99. عدة PBKDF2 Operations
+\`\`\`text
+Main JS Thread
+      ↓
+crypto.pbkdf2()
+      ↓
+Thread Pool Worker
+      ↓
+CPU calculation
+      ↓
+completion
+      ↓
+Event Loop
+      ↓
+callback
+\`\`\`
 
-إذا كان thread pool يحتوي 4 workers وشغلت خمس عمليات:
+# 99. ماذا يحدث لو عندي Tasks أكثر من Workers؟
+
+لو Thread Pool فيها 4 workers وأرسلت 5 أعمال طويلة:
 
 \`\`\`text
 Worker 1 → Task 1
@@ -327,15 +600,21 @@ Worker 2 → Task 2
 Worker 3 → Task 3
 Worker 4 → Task 4
 
-Queue:
+Waiting Queue:
 Task 5
 \`\`\`
 
-المهمة الخامسة غالبًا تنتظر worker متاحًا. هذا يعني أن Async لا تعني infinite concurrency.
+Task 5 تنتظر Worker متاحًا.
 
-# 100. Order of Invocation vs Order of Completion
+إذن:
 
-لو كتبت:
+> Async لا تعني Infinite Parallelism.
+
+العملية يمكن أن تكون async من منظور JavaScript، لكنها ما زالت تنتظر resource داخلي مثل worker.
+
+# 100. Invocation Order ≠ Completion Order
+
+لو بدأت:
 
 \`\`\`js
 task1();
@@ -343,55 +622,105 @@ task2();
 task3();
 \`\`\`
 
-هذا هو ترتيب الاستدعاء. لكن completion قد يكون:
+هذا هو **Invocation Order**.
+
+لكن الانتهاء قد يكون:
 
 \`\`\`text
 task2
-task3
 task1
+task3
 \`\`\`
 
-لأن كل task قد تستغرق زمنًا مختلفًا. هذا مهم مع File I/O وNetwork I/O وThread Pool tasks وDatabase queries وExternal APIs.
+لماذا؟
 
-# 101. Network Requests لا تدخل عادة Thread Pool Queue
+- مدة كل عملية مختلفة.
+- OS scheduling مختلف.
+- Worker availability مختلف.
+- Network latency مختلفة.
+- Disk/cache state مختلفة.
 
-كقاعدة عامة لمعظم socket network I/O:
+لذلك لا تبنِ logic على افتراض أن async tasks ستنتهي بنفس ترتيب استدعائها.
+
+# 101. Network I/O vs File I/O — المقارنة التي يجب تثبيتها
+
+هذه أهم مقارنة في الدرس:
 
 \`\`\`text
-HTTP/TCP socket
-→ OS/kernel event mechanisms
+NETWORK I/O
+http / TCP sockets
+       ↓
+OS / Kernel readiness
+       ↓
+Event Loop
+       ↓
+callback
+
+FILE I/O
+fs.readFile()
+       ↓
+libuv Thread Pool
+       ↓
+OS file operation
+       ↓
+Event Loop
+       ↓
+callback
 \`\`\`
 
-وليس:
+الاثنان Async من منظور JavaScript، لكن **المسار الداخلي مختلف**.
+
+# 102. DNS: لماذا لا توجد إجابة واحدة؟
+
+DNS مثال ممتاز يثبت أن اسم المجال وحده لا يكفي؛ يجب معرفة الـ API.
+
+مثلًا:
+
+- \`dns.lookup()\` قد يعتمد على system resolver ويستخدم libuv Thread Pool.
+- APIs أخرى في \`node:dns\` يمكن أن تستخدم asynchronous DNS mechanisms مختلفة.
+
+إذن لا تحفظ:
 
 \`\`\`text
-one libuv worker thread per request
+DNS = Thread Pool
 \`\`\`
 
-# 102. DNS يحتاج تفصيل
+ولا:
 
-لا تقل "DNS always Thread Pool" ولا "DNS never Thread Pool". APIs تختلف.
+\`\`\`text
+DNS = OS async always
+\`\`\`
 
-بعض عمليات \`dns.lookup()\` تعتمد على system resolver ويمكن أن تستخدم libuv thread pool، بينما DNS APIs أخرى قد تستخدم asynchronous DNS mechanisms مختلفة.
+احفظ:
 
-إذن افهم API نفسها بدل حفظ جملة عامة.
+> المسار يعتمد على الـ API المستخدمة.
 
 # 103. Thread Pool Starvation
 
-إذا كان لديك 4 workers وكلهم مشغولون بعمليات crypto ثقيلة:
+الآن اربط queue بالـ File System.
+
+لو لديك 4 Workers وكلهم مشغولون بـ Crypto طويل:
 
 \`\`\`text
 Worker 1 → PBKDF2
 Worker 2 → PBKDF2
 Worker 3 → PBKDF2
 Worker 4 → PBKDF2
+
+Waiting:
+fs.readFile()
 \`\`\`
 
-ثم جاء \`fs.readFile()\` فقد ينتظر worker متاحًا، لأن بعض هذه العمليات تشارك نفس thread pool.
+الـ File I/O async، لكن قد تتأخر لأنها تحتاج Worker من نفس pool.
+
+هذا يسمى **Thread Pool Starvation**.
 
 مثال:
 
 \`\`\`js
+const crypto = require("node:crypto");
+const fs = require("node:fs");
+
 for (let i = 0; i < 4; i++) {
   crypto.pbkdf2(
     "secret",
@@ -408,19 +737,83 @@ fs.readFile("file.txt", () => {
 });
 \`\`\`
 
-الـ file read قد تتأخر بسبب thread pool المشغولة.
+المشكلة ليست أن Event Loop متوقفة، بل أن العملية التي تحتاج Worker تنتظر توفر Worker.
 
-# 104. Rule of Thumb
+# 104. كيف تربط الدرس كله؟
 
-لا تستخدم رقمًا ضخمًا لـ \`UV_THREADPOOL_SIZE\` لمجرد "زيادة الأداء". الصح:
+استخدم الخريطة التالية كل مرة:
 
 \`\`\`text
-benchmark
-measure
-adjust
+I call an API
+      ↓
+Is it synchronous?
+      │
+      ├── Yes
+      │    ↓
+      │ Main JS Thread waits / blocks
+      │
+      └── No
+           ↓
+      Async operation
+           ↓
+   Which internal path?
+      │             │
+      ↓             ↓
+ OS / Kernel    Thread Pool
+ Network        fs / crypto
+ sockets        zlib / some DNS
+      │             │
+      └──────┬──────┘
+             ↓
+         completion
+             ↓
+         Event Loop
+             ↓
+         callback
+             ↓
+      Main JS Thread
 \`\`\`
 
-وقِس Latency وCPU utilization وThroughput وThread contention قبل وبعد.
+والقاعدة العملية:
+
+\`\`\`text
+Do not ask only:
+"Is it async?"
+
+Also ask:
+"Who is doing the work while JS continues?"
+\`\`\`
+
+## جدول الربط النهائي
+
+| المفهوم | معناه | أين يعمل/يحدث؟ | مثال | ما الذي يجب ألا تخلطه معه؟ |
+|---|---|---|---|---|
+| V8 | محرك تنفيذ JavaScript | Main JS Thread أساسًا | تنفيذ callback | ليس مسؤولًا عن كل I/O |
+| Main JavaScript Thread | الـ thread الذي ينفذ كود تطبيقك | داخل Node process | route handler / callback | Node process ليست thread واحدة فقط |
+| Call Stack | تتبع functions الجاري تنفيذها | داخل V8 execution | one() → two() | ليست Event Loop queue |
+| libuv | طبقة تنسيق async I/O وOS abstraction | داخل Node Runtime | fs/network coordination | ليست JavaScript library عادية |
+| Event Loop | تنسق متى تعمل callbacks الجاهزة | libuv/Node runtime | callback بعد I/O | لا تقوم بقراءة الملف بنفسها |
+| Offloading | تفويض العمل خارج Main JS Thread | إلى OS أو Thread Pool | fs.readFile / socket wait | لا يعني دائمًا Thread Pool |
+| OS async path | kernel يراقب readiness/events | Operating System | HTTP/TCP sockets | لا يحتاج worker لكل request |
+| Thread Pool | مجموعة worker threads لعمليات محددة | libuv | fs, pbkdf2, zlib | ليست Worker Threads |
+| Async File I/O | قراءة/كتابة بدون حجز Main JS Thread | غالبًا Thread Pool + OS | fs.readFile | Async لا تعني بدون انتظار داخلي |
+| Network I/O | socket communication | غالبًا OS/kernel mechanisms | HTTP/TCP | ليست عادة one worker per connection |
+| UV_THREADPOOL_SIZE | عدد libuv workers | Environment config | 4 → 8 | الأكبر ليس دائمًا أسرع |
+| pbkdf2Sync | CPU-heavy synchronous crypto | Main JS Thread | password derivation | تحجز JavaScript |
+| pbkdf2 async | CPU-heavy native async crypto | libuv Thread Pool | crypto.pbkdf2 | ليست Worker Thread JS |
+| Thread Pool Queue | انتظار Tasks عندما كل workers مشغولة | داخل pool scheduling | Task 5 تنتظر | Async ليست infinite parallelism |
+| Thread Pool Starvation | تأخر Tasks بسبب انشغال كل workers | libuv pool | crypto يؤخر fs | ليست نفس Event Loop blocking |
+| Completion Order | ترتيب انتهاء async work | يعتمد على runtime/OS/workload | task2 قبل task1 | لا يساوي Invocation Order |
+| DNS | المسار يعتمد على API | system resolver أو async DNS path | dns.lookup | لا تحفظ DNS = pool دائمًا |
+
+## ملخص الربط في 6 جمل
+
+1. V8 ينفذ JavaScript على Main JavaScript Thread.
+2. عندما تستدعي Async API، Node تحاول ألا تجعل Main Thread تنتظر.
+3. libuv تنسق العملية وتقرر/تستخدم المسار المناسب بحسب نوع الـ API.
+4. Network sockets تعتمد غالبًا على OS event mechanisms، بينما كثير من fs وبعض crypto/zlib/DNS تستخدم Thread Pool.
+5. عند اكتمال العملية، Event Loop تساعد في إعادة callback إلى JavaScript عندما تصبح Main Thread متاحة.
+6. لذلك Async لا تعني Thread Pool، وThread Pool لا تعني Event Loop، وNode ليست single-threaded حرفيًا.
 
 ## أسئلة مراجعة
 

@@ -426,21 +426,21 @@ fs.writeFileSync(
 
 عند التعامل مع JSON في Node.js يوجد تحويلان أساسيان يجب أن تفرق بينهما جيدًا:
 
-```text
+\`\`\`text
 JSON Text
    ↓ JSON.parse()
 JavaScript Value
    ↓ JSON.stringify()
 JSON Text
-```
+\`\`\`
 
 ### أولًا: JSON.parse()
 
-`JSON.parse()` تستخدم عندما يكون لديك **JSON مكتوب كنص String** وتريد تحويله إلى قيمة JavaScript تستطيع التعامل معها، مثل Object أو Array.
+\`JSON.parse()\` تستخدم عندما يكون لديك **JSON مكتوب كنص String** وتريد تحويله إلى قيمة JavaScript تستطيع التعامل معها، مثل Object أو Array.
 
 مثال:
 
-```js
+\`\`\`js
 const jsonText = '{"name":"Osama","age":28}';
 
 console.log(typeof jsonText); // string
@@ -450,117 +450,117 @@ const user = JSON.parse(jsonText);
 console.log(user);
 console.log(user.name);       // Osama
 console.log(typeof user);     // object
-```
+\`\`\`
 
-قبل `JSON.parse()`:
+قبل \`JSON.parse()\`:
 
-```text
+\`\`\`text
 '{"name":"Osama","age":28}'
             ↓
           String
-```
+\`\`\`
 
 بعدها:
 
-```text
+\`\`\`text
 {
   name: "Osama",
   age: 28
 }
         ↓
 JavaScript Object
-```
+\`\`\`
 
 القاعدة:
 
-> `JSON.parse()` = JSON String → JavaScript Value
+> \`JSON.parse()\` = JSON String → JavaScript Value
 
 ### لماذا نحتاج JSON.parse() عند قراءة JSON File؟
 
-عندما تقرأ ملفًا باستخدام encoding مثل `utf8`:
+عندما تقرأ ملفًا باستخدام encoding مثل \`utf8\`:
 
-```js
+\`\`\`js
 const data = fs.readFileSync("users.json", "utf8");
-```
+\`\`\`
 
-القيمة الموجودة في `data` هي **String**، حتى لو كان شكل النص داخل الملف Array أو Object.
+القيمة الموجودة في \`data\` هي **String**، حتى لو كان شكل النص داخل الملف Array أو Object.
 
 مثال ملف:
 
-```json
+\`\`\`json
 [
   {
     "id": 1,
     "name": "Ali"
   }
 ]
-```
+\`\`\`
 
 بعد القراءة:
 
-```js
+\`\`\`js
 const data = fs.readFileSync("users.json", "utf8");
 
 console.log(typeof data); // string
-```
+\`\`\`
 
 لا يمكنك التعامل معه كـ Array مباشرة:
 
-```js
+\`\`\`js
 data.push({ id: 2, name: "Osama" });
-```
+\`\`\`
 
-هذا خطأ لأن `data` String وليس Array.
+هذا خطأ لأن \`data\` String وليس Array.
 
 يجب أولًا:
 
-```js
+\`\`\`js
 const users = JSON.parse(data);
 
 users.push({
   id: 2,
   name: "Osama",
 });
-```
+\`\`\`
 
-الآن `users` أصبحت JavaScript Array فعلية.
+الآن \`users\` أصبحت JavaScript Array فعلية.
 
 ### ماذا لو JSON غير صحيح؟
 
-`JSON.parse()` قد ترمي `SyntaxError` إذا كان النص ليس JSON صالحًا.
+\`JSON.parse()\` قد ترمي \`SyntaxError\` إذا كان النص ليس JSON صالحًا.
 
 مثال:
 
-```js
+\`\`\`js
 const invalidJson = '{"name":"Osama",}';
 
 JSON.parse(invalidJson);
-```
+\`\`\`
 
 المشكلة هي الـ trailing comma.
 
 لذلك مع البيانات غير المضمونة استخدم error handling:
 
-```js
+\`\`\`js
 try {
   const data = JSON.parse(jsonText);
   console.log(data);
 } catch (error) {
   console.error("Invalid JSON");
 }
-```
+\`\`\`
 
 ---
 
 ### ثانيًا: JSON.stringify()
 
-`JSON.stringify()` تعمل في الاتجاه العكسي.
+\`JSON.stringify()\` تعمل في الاتجاه العكسي.
 
 تأخذ JavaScript Value مثل Object أو Array وتحولها إلى **JSON String**.
 
 مثال:
 
-```js
+\`\`\`js
 const user = {
   name: "Osama",
   age: 28,
@@ -570,36 +570,36 @@ const jsonText = JSON.stringify(user);
 
 console.log(jsonText);
 console.log(typeof jsonText);
-```
+\`\`\`
 
 الناتج:
 
-```text
+\`\`\`text
 {"name":"Osama","age":28}
 
 string
-```
+\`\`\`
 
 القاعدة:
 
-> `JSON.stringify()` = JavaScript Value → JSON String
+> \`JSON.stringify()\` = JavaScript Value → JSON String
 
 ### لماذا نحتاج JSON.stringify() عند الكتابة في ملف؟
 
 لنفترض أن لديك:
 
-```js
+\`\`\`js
 const users = [
   { id: 1, name: "Ali" },
   { id: 2, name: "Osama" },
 ];
-```
+\`\`\`
 
 هذه JavaScript Array داخل الذاكرة.
 
 حتى تحفظها كـ JSON file نحولها أولًا إلى text:
 
-```js
+\`\`\`js
 const jsonText = JSON.stringify(users);
 
 fs.writeFileSync(
@@ -607,11 +607,11 @@ fs.writeFileSync(
   jsonText,
   "utf8"
 );
-```
+\`\`\`
 
 المسار الذهني:
 
-```text
+\`\`\`text
 JavaScript Array/Object
         ↓
  JSON.stringify()
@@ -621,33 +621,33 @@ JavaScript Array/Object
  fs.writeFileSync()
         ↓
       JSON File
-```
+\`\`\`
 
 ### لماذا نستخدم JSON.stringify(value, null, 2)؟
 
 إذا كتبت:
 
-```js
+\`\`\`js
 JSON.stringify(users);
-```
+\`\`\`
 
 ستحصل غالبًا على JSON في سطر واحد:
 
-```json
+\`\`\`json
 [{"id":1,"name":"Ali"},{"id":2,"name":"Osama"}]
-```
+\`\`\`
 
 هذا صالح تمامًا، لكنه أقل راحة للإنسان أثناء القراءة.
 
 لذلك نستخدم:
 
-```js
+\`\`\`js
 JSON.stringify(users, null, 2);
-```
+\`\`\`
 
 فتصبح النتيجة:
 
-```json
+\`\`\`json
 [
   {
     "id": 1,
@@ -658,31 +658,31 @@ JSON.stringify(users, null, 2);
     "name": "Osama"
   }
 ]
-```
+\`\`\`
 
 معنى arguments:
 
-```js
+\`\`\`js
 JSON.stringify(value, replacer, space);
-```
+\`\`\`
 
 في:
 
-```js
+\`\`\`js
 JSON.stringify(users, null, 2);
-```
+\`\`\`
 
-- `users`: القيمة التي نريد تحويلها.
-- `null`: لا نستخدم replacer لتصفية أو تعديل properties.
-- `2`: استخدم مسافتين indentation لتنسيق JSON.
+- \`users\`: القيمة التي نريد تحويلها.
+- \`null\`: لا نستخدم replacer لتصفية أو تعديل properties.
+- \`2\`: استخدم مسافتين indentation لتنسيق JSON.
 
-> الـ `2` تؤثر على شكل النص وقراءته فقط، وليس على معنى البيانات.
+> الـ \`2\` تؤثر على شكل النص وقراءته فقط، وليس على معنى البيانات.
 
 ### الدورة الكاملة مع JSON File
 
 هذا هو الـ workflow المهم الذي يجب حفظه بالفهم:
 
-```text
+\`\`\`text
 JSON File
    ↓
 fs.readFile / readFileSync
@@ -702,11 +702,11 @@ String
 fs.writeFile / writeFileSync
    ↓
 JSON File
-```
+\`\`\`
 
 مثال كامل:
 
-```js
+\`\`\`js
 const fs = require("node:fs");
 
 const text = fs.readFileSync(
@@ -732,51 +732,51 @@ fs.writeFileSync(
   updatedJson,
   "utf8"
 );
-```
+\`\`\`
 
 ### JSON ليس هو JavaScript Object
 
 هذه من أهم النقاط:
 
-```js
+\`\`\`js
 const userObject = {
   name: "Osama",
 };
-```
+\`\`\`
 
 هذا **JavaScript Object**.
 
 أما:
 
-```js
+\`\`\`js
 const jsonText = '{"name":"Osama"}';
-```
+\`\`\`
 
 فهذا **String يحتوي JSON text**.
 
 لذلك لا تستخدم المصطلحين كأنهما شيء واحد:
 
-```text
+\`\`\`text
 JavaScript Object ≠ JSON String
-```
+\`\`\`
 
 لكن يمكنك التحويل بينهما:
 
-```text
+\`\`\`text
 JSON String
    ↓ parse
 JavaScript Object
    ↓ stringify
 JSON String
-```
+\`\`\`
 
 ### قيم لا يتعامل معها JSON مثل JavaScript تمامًا
 
 JSON format أبسط من JavaScript objects.
 
-مثلًا properties التي قيمتها `undefined` أو Function لا تُحفظ كـ JSON property بالشكل الطبيعي:
+مثلًا properties التي قيمتها \`undefined\` أو Function لا تُحفظ كـ JSON property بالشكل الطبيعي:
 
-```js
+\`\`\`js
 const data = {
   name: "Osama",
   value: undefined,
@@ -786,29 +786,29 @@ const data = {
 };
 
 console.log(JSON.stringify(data));
-```
+\`\`\`
 
 ستكون النتيجة تقريبًا:
 
-```json
+\`\`\`json
 {"name":"Osama"}
-```
+\`\`\`
 
-أيضًا `BigInt` لا يمكن تحويله مباشرة باستخدام `JSON.stringify()` بدون معالجة خاصة.
+أيضًا \`BigInt\` لا يمكن تحويله مباشرة باستخدام \`JSON.stringify()\` بدون معالجة خاصة.
 
 ### الخلاصة السريعة
 
 | Function | Input | Output | الاستخدام |
 |---|---|---|---|
-| `JSON.parse()` | JSON String | JavaScript Value | عندما تقرأ JSON وتريد استخدام البيانات في الكود |
-| `JSON.stringify()` | JavaScript Value | JSON String | عندما تريد إرسال أو حفظ البيانات بصيغة JSON |
+| \`JSON.parse()\` | JSON String | JavaScript Value | عندما تقرأ JSON وتريد استخدام البيانات في الكود |
+| \`JSON.stringify()\` | JavaScript Value | JSON String | عندما تريد إرسال أو حفظ البيانات بصيغة JSON |
 
 احفظها بهذه الصورة:
 
-```text
+\`\`\`text
 parse     = Text → JavaScript
 stringify = JavaScript → Text
-```
+\`\`\`
 
 ## أسئلة مراجعة
 

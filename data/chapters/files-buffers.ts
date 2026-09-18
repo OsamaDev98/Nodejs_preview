@@ -5,7 +5,7 @@ export const filesBuffersChapter: StudyChapter = {
   number: 3,
   title: "File System وBuffer وJSON",
   subtitle: "Blocking vs Non-blocking، callbacks، promises، binary data وUTF-8.",
-  readingTime: "50 دقيقة",
+  readingTime: "58 دقيقة",
   keywords: ["fs", "readFile", "readFileSync", "Buffer", "UTF-8", "JSON", "async/await"],
   content: String.raw`
 # 36. File System Module — fs

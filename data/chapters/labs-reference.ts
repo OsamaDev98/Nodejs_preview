@@ -8,6 +8,28 @@ export const labsReferenceChapter: StudyChapter = {
   readingTime: "60 دقيقة",
   keywords: ["Lab", "Practice", "Glossary", "Interview", "Exercises", "Revision"],
   content: String.raw`
+# قبل أن تبدأ: Mental Design للدرس كله
+
+هذا الفصل ليس معلومات جديدة بقدر ما هو **مختبر إثبات** لكل Mental Models السابقة.
+
+\`\`\`text
+Theory
+  ↓
+Predict what should happen
+  ↓
+Run experiment
+  ↓
+Observe output / timing / memory
+  ↓
+Explain using
+V8 + libuv + Event Loop + Thread Pool + Streams
+  ↓
+Correct your mental model
+\`\`\`
+
+لا تنفذ الـ labs كنسخ ولصق. قبل كل تجربة اكتب توقعك، وبعدها اشرح النتيجة بالمفاهيم التي درستها.
+
+
 # 164. قاموس المصطلحات الأساسي
 
 | المصطلح | المعنى |
@@ -598,4 +620,23 @@ Node.js
 5. غيّر المثال بنفسك: أضف timer أو Promise أو I/O وشاهد الفرق.
 6. في الأداء، لا تعتمد على التخمين: benchmark ثم measure ثم adjust.
 7. عندما تستطيع شرح الفرق بين V8 وlibuv وEvent Loop وThread Pool وWorker Threads لشخص آخر، تكون الصورة المعمارية بدأت تثبت فعلًا.
+
+## كيف تربط الـ Labs بالمفاهيم؟
+
+| الـ Lab | ما الذي يثبته؟ |
+|---|---|
+| Module cache | Load/execute/cache lifecycle |
+| Sync vs Async fs | Blocking vs Non-blocking |
+| Buffer/UTF-8 | Bytes ↔ Text |
+| Streams | Chunking + memory efficiency |
+| Crypto sync/async | Main Thread vs Thread Pool |
+| UV_THREADPOOL_SIZE | Worker contention/tuning |
+| Event Loop ordering | phases/scheduling |
+| nextTick/Promises | microtask priority |
+| Starvation | كيف يمكن منع Event Loop من التقدم |
+| Event Loop delay | قياس أثر blocking عمليًا |
+
+> الهدف من كل تجربة: **Prediction → Execution → Observation → Explanation**.
+
+
 `};

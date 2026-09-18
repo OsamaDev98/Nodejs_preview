@@ -8,6 +8,31 @@ export const modulesChapter: StudyChapter = {
   readingTime: "45 دقيقة",
   keywords: ["Modules", "CommonJS", "ESM", "require", "module.exports", "cache", "wrapper"],
   content: String.raw`
+# قبل أن تبدأ: Mental Design للدرس كله
+
+هذا الدرس يشرح كيف ينتقل مشروع Node من ملف واحد إلى تطبيق مكوّن من أجزاء مترابطة.
+
+\`\`\`text
+Large Application
+      ↓
+Split into Modules
+      ↓
+Export values
+      ↓
+Import / require them
+      ↓
+Node resolves file/package
+      ↓
+Module executes
+      ↓
+Exports returned
+      ↓
+Result may be cached
+\`\`\`
+
+إذن CommonJS وESM وmodule.exports وrequire وModule Wrapper وCache ليست موضوعات منفصلة؛ كلها مراحل في **Module Lifecycle**.
+
+
 # 17. Node.js Modules
 
 الـ Module هي وحدة كود مستقلة يمكن إعادة استخدامها. بدل أن يكون التطبيق ملفًا واحدًا فيه آلاف الأسطر نقسمه إلى أجزاء مسؤولية كل جزء واضحة.
@@ -475,6 +500,24 @@ database
 \`\`\`
 
 وهذا يوضح لماذا فهم الـ Modules هو أساس تنظيم أي Backend Application حقيقي.
+
+## كيف تربط أجزاء الدرس معًا؟
+
+| المفهوم | دوره |
+|---|---|
+| Module | وحدة مستقلة من الكود |
+| Export | ما يسمح الـ module للآخرين باستخدامه |
+| Import / require | جلب exports من module آخر |
+| CommonJS | نظام Node التقليدي: require + module.exports |
+| ESM | النظام القياسي الحديث: import + export |
+| Module Wrapper | يفسر من أين تأتي require/module/__dirname |
+| Module Scope | يمنع متغيرات الملف من أن تصبح global تلقائيًا |
+| Resolution | تحديد الملف أو package المقصود |
+| Module Cache | منع إعادة تنفيذ CommonJS module غالبًا بعد أول تحميل |
+| require.resolve | معرفة المسار الذي سيُحمّل فعليًا |
+
+> فكر دائمًا: **Resolve → Load → Execute → Export → Cache**.
+
 
 ## أسئلة مراجعة
 

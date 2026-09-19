@@ -5,63 +5,64 @@ export const microtasksChapter: StudyChapter = {
   number: 7,
   title: "Microtasks وnextTick وترتيب التنفيذ",
   subtitle: "Promises، queueMicrotask، setImmediate، starvation والـ ordering الحقيقي.",
-  readingTime: "55 دقيقة",
+  readingTime: "65 دقيقة",
   keywords: ["process.nextTick", "Promise", "queueMicrotask", "setImmediate", "starvation", "ordering"],
   content: String.raw`
-# قبل أن تبدأ: Mental Design للدرس كله
+# قبل أن تبدأ: Mental Design بسيط جدًا
 
-بعد أن فهمت Event Loop، هذا الدرس يضيف سؤالًا جديدًا: **إذا كان عندي أكثر من callback جاهزة، من له الأولوية؟**
+هذا الدرس كله يدور حول سؤال واحد:
 
-\`\`\`text
-Current JavaScript finishes
-        ↓
-process.nextTick queue
-        ↓
-Promise / queueMicrotask microtasks
-        ↓
-Event Loop continues
-timers / poll / check ...
-\`\`\`
+> **عندما تنتهي JavaScript الحالية، وهناك أكثر من callback جاهزة، أي واحدة تعمل أولًا؟**
 
-هذا ترتيب ذهني مبسط للسياقات المعتادة في Node، وليس قانونًا مطلقًا لكل top-level ESM scenario. الهدف هو فهم priority وليس حفظ output بلا سياق.
-
-
-# 127. Microtasks
-
-لفهم ترتيب التنفيذ في Node لا يكفي أن تحفظ phases الخاصة بـ Event Loop. يوجد أيضًا Microtasks، كما أن \`process.nextTick()\` له queue وسلوك خاص في Node.
-
-من أشهر microtasks:
+لا تبدأ بحفظ أسماء كثيرة. ابدأ بهذه الصورة:
 
 \`\`\`text
-Promise.then()
-Promise.catch()
-Promise.finally()
-queueMicrotask()
+1) JavaScript الحالية تعمل
+        ↓
+2) تنتهي الـ Call Stack الحالية
+        ↓
+3) Node تفحص nextTick queue
+        ↓
+4) ثم Microtasks مثل Promise وqueueMicrotask
+        ↓
+5) ثم تكمل Event Loop
+   timers / poll / check / ...
 \`\`\`
 
-وفي Node يوجد أيضًا:
+هذا هو الـ Mental Model الأساسي لهذا الدرس.
+
+وبشكل أبسط جدًا:
 
 \`\`\`text
-process.nextTick()
+Current code
+   ↓
+nextTick
+   ↓
+Promise / queueMicrotask
+   ↓
+Event Loop work
 \`\`\`
 
-والأدق أن Node تفرق بين nextTick queue وmicrotask queue.
+لكن انتبه: هذا ترتيب تعليمي للسياقات المعتادة في Node، وليس قاعدة مطلقة لكل سياق، خصوصًا top-level ESM.
 
-# 128. process.nextTick()
+
+# 127. أولًا: ما معنى Scheduling؟
+
+Scheduling يعني: عندما يكون عندي أكثر من شيء جاهز للتنفيذ، **متى وأين يوضع كل واحد؟**
 
 مثال:
 
 \`\`\`js
 console.log("A");
 
-process.nextTick(() => {
+setTimeout(() => {
   console.log("B");
-});
+}, 0);
 
 console.log("C");
 \`\`\`
 
-الناتج:
+النتيجة:
 
 \`\`\`text
 A
@@ -69,9 +70,30 @@ C
 B
 \`\`\`
 
-callback لا تعمل داخل نفس synchronous stack، لكنها تعمل بعد انتهاء current synchronous code وقبل الانتقال الطبيعي لأعمال event loop الأخرى.
+لماذا؟
 
-# 129. Promise Microtask
+- A تعمل فورًا.
+- setTimeout لا يشغل callback فورًا؛ يقوم بجدولتها.
+- C ما زالت synchronous، فتعمل قبل B.
+
+إذن أول قاعدة:
+
+> **الكود synchronous الحالي يكتمل أولًا قبل الانتقال إلى callbacks المجدولة.**
+
+
+# 128. ما هي Microtask؟
+
+Microtask هي callback ذات أولوية عالية تُنفذ بعد انتهاء synchronous code الحالي وقبل أن تستمر Event Loop إلى معظم الأعمال التالية.
+
+أمثلة مشهورة:
+
+- \`Promise.then()\`
+- \`Promise.catch()\`
+- \`Promise.finally()\`
+- \`queueMicrotask()\`
+- continuation بعد \`await\`
+
+مثال:
 
 \`\`\`js
 console.log("A");
@@ -91,11 +113,74 @@ C
 B
 \`\`\`
 
-لأن \`.then()\` microtask.
+لأن Promise callback لم تدخل Call Stack الحالية، لكنها وُضعت في Microtask queue.
 
-# 130. process.nextTick vs Promise
 
-في Node، \`process.nextTick()\` له أولوية خاصة غالبًا أعلى من Promise microtasks في سياقات التنفيذ المعتادة.
+# 129. أين تقع Microtasks في الصورة؟
+
+\`\`\`text
+Current synchronous callback
+          ↓
+      finishes
+          ↓
+   Microtasks run
+          ↓
+ Event Loop continues
+\`\`\`
+
+فكر فيها كأن Node تقول:
+
+> قبل أن أذهب للـ timer أو I/O التالي، هل عندي Microtasks جاهزة؟
+
+
+# 130. ما هو process.nextTick()؟
+
+\`process.nextTick()\` API خاصة بـ Node.js.
+
+هي تقول تقريبًا:
+
+> بعد انتهاء الكود الحالي مباشرة، نفّذ هذه callback قبل أن تكمل Event Loop.
+
+مثال:
+
+\`\`\`js
+console.log("A");
+
+process.nextTick(() => {
+  console.log("B");
+});
+
+console.log("C");
+\`\`\`
+
+الناتج المعتاد:
+
+\`\`\`text
+A
+C
+B
+\`\`\`
+
+إذن nextTick لا تقاطع الكود الحالي. تنتظر انتهاء الـ stack الحالية أولًا.
+
+
+# 131. الفرق الذهني بين nextTick وPromise
+
+هذه أهم نقطة في الدرس.
+
+في CommonJS والسياقات المعتادة داخل callbacks، فكر في الترتيب هكذا:
+
+\`\`\`text
+Current synchronous code
+        ↓
+process.nextTick queue
+        ↓
+Promise / queueMicrotask queue
+        ↓
+Event Loop continues
+\`\`\`
+
+مثال:
 
 \`\`\`js
 console.log("start");
@@ -120,20 +205,14 @@ nextTick
 promise
 \`\`\`
 
-# 131. ترتيب التنفيذ المبسط
+السبب:
 
-كموديل دراسي جيد:
+1. synchronous code أولًا.
+2. nextTick queue.
+3. Promise microtasks.
 
-\`\`\`text
-1. Current synchronous code
-2. process.nextTick queue
-3. Promise / microtasks
-4. Event loop phases
-\`\`\`
 
-وبعد callbacks يمكن تصريف microtasks مرة أخرى قبل الانتقال للعمل التالي، لذلك الترتيب الكامل أكثر تفصيلًا من مجرد أربع خطوات ثابتة.
-
-# 132. مثال جامع
+# 132. مثال شامل صغير جدًا
 
 \`\`\`js
 console.log("1");
@@ -153,7 +232,36 @@ process.nextTick(() => {
 console.log("5");
 \`\`\`
 
-غالبًا:
+حلّه خطوة خطوة:
+
+### الخطوة 1 — synchronous
+
+\`\`\`text
+1
+5
+\`\`\`
+
+### الخطوة 2 — nextTick
+
+\`\`\`text
+4
+\`\`\`
+
+### الخطوة 3 — Promise microtask
+
+\`\`\`text
+3
+\`\`\`
+
+### الخطوة 4 — Event Loop
+
+timer يصبح جاهزًا:
+
+\`\`\`text
+2
+\`\`\`
+
+إذن غالبًا:
 
 \`\`\`text
 1
@@ -163,14 +271,10 @@ console.log("5");
 2
 \`\`\`
 
-الشرح:
-
-- 1 و5 synchronous.
-- 4 من nextTick queue.
-- 3 Promise microtask.
-- 2 timer.
 
 # 133. queueMicrotask()
+
+\`queueMicrotask()\` تضع callback مباشرة في Microtask queue.
 
 \`\`\`js
 console.log("A");
@@ -190,17 +294,26 @@ C
 B
 \`\`\`
 
-\`queueMicrotask\` طريقة مباشرة لجدولة microtask.
+هي أقرب للـ standard JavaScript microtask behavior، بينما \`process.nextTick()\` API خاصة بـ Node.
+
 
 # 134. nextTick vs queueMicrotask
 
-\`process.nextTick()\` له semantics خاصة بـ Node. \`queueMicrotask()\` أقرب إلى JavaScript/Web-standard microtask semantics.
+الفرق المفاهيمي:
 
-إذا لم تكن تحتاج behavior خاصًا بـ Node، فقد تكون \`queueMicrotask\` أوضح في بعض الحالات.
+| API | النوع | أين تستخدمها ذهنيًا؟ |
+|---|---|---|
+| \`process.nextTick()\` | Node-specific queue | أولوية خاصة بعد الكود الحالي |
+| \`queueMicrotask()\` | Standard microtask | نفس طبقة Promise microtasks |
 
-# 135. Event Loop Starvation
+في الكود الحديث، إذا لم تكن تحتاج semantics خاصة بـ Node، فـ \`queueMicrotask()\` غالبًا أوضح وأكثر portable.
 
-يمكن أن تسبب recursive nextTick starvation:
+
+# 135. لماذا لا نريد الإفراط في nextTick؟
+
+لأنها ذات أولوية عالية.
+
+مثال خطر:
 
 \`\`\`js
 function loop() {
@@ -210,9 +323,30 @@ function loop() {
 loop();
 \`\`\`
 
-هذه الحلقة قد تمنع Event Loop من الوصول إلى Timers وI/O وsetImmediate لأن nextTick queue تتجدد باستمرار.
+ماذا يحدث؟
 
-ويمكن أن يحدث concept مشابه مع Promises:
+كل nextTick تضيف nextTick أخرى.
+
+\`\`\`text
+nextTick
+   ↓
+nextTick
+   ↓
+nextTick
+   ↓
+nextTick
+   ↓
+...
+\`\`\`
+
+فتظل Node مشغولة بتصريف nextTick queue ولا تصل بسهولة إلى timers أو I/O.
+
+هذا يسمى **Starvation**.
+
+
+# 136. هل Promise يمكن أن تسبب Starvation أيضًا؟
+
+نعم، إذا استمريت في إنشاء Microtasks بلا نهاية.
 
 \`\`\`js
 function loop() {
@@ -222,43 +356,46 @@ function loop() {
 loop();
 \`\`\`
 
-إنتاج microtasks بلا نهاية قد يمنع Event Loop من التقدم بصورة طبيعية.
+الفكرة:
 
-# 136. Macro Tasks vs Microtasks
+> أي queue ذات أولوية يمكن أن تمنع Event Loop من التقدم لو ظلت تتجدد بلا نهاية.
 
-في شروحات JavaScript قد تسمع مصطلحي Macrotask وMicrotask. لكن في Node من الأفضل ألا تختزل runtime إلى "macro queue واحدة + micro queue واحدة"، لأن Node لديها phases متعددة.
 
-كمفهوم:
+# 137. ما المقصود بـ Macrotask؟
 
-- Promise callbacks و\`queueMicrotask\` = microtasks.
-- \`process.nextTick\` = queue خاصة ذات أولوية مميزة في Node.
-- timers وI/O callbacks و\`setImmediate\` تدخل في Event Loop phases المختلفة.
+قد تسمع في شروحات JavaScript:
 
-# 137. setImmediate متى نستخدمه؟
-
-إذا كنت داخل I/O callback وتريد تأجيل جزء من التنفيذ للـ check phase:
-
-\`\`\`js
-fs.readFile("file.txt", () => {
-  setImmediate(() => {
-    console.log("after I/O");
-  });
-});
+\`\`\`text
+Macrotask
+vs
+Microtask
 \`\`\`
 
-\`setImmediate\` ليست بديلًا دائمًا لـ \`setTimeout\`، وكل واحدة لها semantics مختلفة.
+في Node لا أحب أن تختزل الصورة إلى queue واحدة اسمها Macrotask لأن Event Loop فيها phases متعددة.
 
-# 138. setTimeout(0) لا يعني 0 فعليًا
+الأفضل:
 
-حتى لو كتبت:
+\`\`\`text
+Microtasks:
+Promise / queueMicrotask
 
-\`\`\`js
-setTimeout(fn, 0);
+Node special queue:
+process.nextTick
+
+Event Loop work:
+timers / I/O / setImmediate / close ...
 \`\`\`
 
-المعنى ليس execute immediately. هناك minimum scheduling behavior وevent loop overhead. المعنى الأقرب: schedule as soon as timer rules allow.
 
-# 139. مثال كامل لترتيب التنفيذ
+# 138. أين setTimeout(0)؟
+
+\`setTimeout(fn, 0)\` لا يعني "شغّل الآن".
+
+يعني:
+
+> اجعل callback مؤهلة للتنفيذ عندما تسمح timer scheduling rules بذلك.
+
+مثال:
 
 \`\`\`js
 console.log("A");
@@ -267,47 +404,61 @@ setTimeout(() => {
   console.log("B");
 }, 0);
 
-setImmediate(() => {
-  console.log("C");
-});
-
-process.nextTick(() => {
-  console.log("D");
-});
-
-Promise.resolve().then(() => {
-  console.log("E");
-});
-
-console.log("F");
+console.log("C");
 \`\`\`
 
-المؤكد أولًا:
+النتيجة:
 
 \`\`\`text
 A
-F
-D
-E
+C
+B
 \`\`\`
 
-أما ترتيب \`B\` و\`C\` في top-level فلا تعتمد عليه بشكل ثابت.
 
-# 140. مثال داخل fs.readFile
+# 139. أين setImmediate()؟
+
+\`setImmediate()\` تضع callback في **check phase** من Event Loop.
+
+فكر فيها هكذا:
+
+\`\`\`text
+setTimeout(0)
+→ timers
+
+setImmediate
+→ check phase
+\`\`\`
+
+لكن لا تحفظ أن واحدة منهما دائمًا تسبق الأخرى في top-level، لأن الترتيب قد يعتمد على السياق والتوقيت.
+
+
+# 140. المثال الذي يسبب اللخبطة: setTimeout vs setImmediate
+
+\`\`\`js
+setTimeout(() => {
+  console.log("timeout");
+}, 0);
+
+setImmediate(() => {
+  console.log("immediate");
+});
+\`\`\`
+
+في top-level:
+
+> لا تبنِ منطقك على ترتيب ثابت بينهما.
+
+لكن داخل I/O callback غالبًا يكون الأمر أوضح.
+
+
+# 141. المثال الأهم: داخل I/O callback
 
 \`\`\`js
 const fs = require("node:fs");
 
 fs.readFile("file.txt", () => {
   console.log("I/O");
-
-  setTimeout(() => {
-    console.log("timeout");
-  }, 0);
-
-  setImmediate(() => {
-    console.log("immediate");
-  });
 
   process.nextTick(() => {
     console.log("nextTick");
@@ -316,10 +467,18 @@ fs.readFile("file.txt", () => {
   Promise.resolve().then(() => {
     console.log("promise");
   });
+
+  setImmediate(() => {
+    console.log("immediate");
+  });
+
+  setTimeout(() => {
+    console.log("timeout");
+  }, 0);
 });
 \`\`\`
 
-الترتيب المتوقع داخل callback غالبًا:
+الترتيب المتوقع غالبًا:
 
 \`\`\`text
 I/O
@@ -329,155 +488,133 @@ immediate
 timeout
 \`\`\`
 
-هذا مثال مهم جدًا لفهم الأولويات.
-
-# 141. لماذا Microtasks تنفذ بسرعة؟
-
-runtime تقوم بتصريفها بعد انتهاء synchronous callback الحالي قبل الاستمرار إلى أعمال event loop التالية.
+لماذا؟
 
 \`\`\`text
-callback executes
-↓
+I/O callback executes
+      ↓
 callback ends
-↓
-nextTick / microtasks
-↓
-event loop continues
+      ↓
+nextTick
+      ↓
+Promise microtasks
+      ↓
+check phase
+setImmediate
+      ↓
+next timer opportunity
+setTimeout
 \`\`\`
 
-# 142. FIFO لا تعني أن كل Node FIFO واحدة
+هذا المثال وحده يربط نصف الدرس.
 
-داخل queue واحدة، الترتيب غالبًا FIFO: First In, First Out. لكن وجود عدة queues/phases يجعل global execution order غير قابل للتعبير عنه كـ FIFO واحدة فقط.
 
-# 143. Long-running Callback
+# 142. Microtasks تعمل بعد كل callback مهمة
 
-حتى callback جاءت من async API يمكنها حجز main thread لو هي نفسها تعمل CPU-heavy JavaScript.
+لا تتخيل أن Microtasks تعمل مرة واحدة فقط في البرنامج.
+
+بعد انتهاء callback، runtime تستطيع تصريف nextTick/microtasks قبل الانتقال لعمل آخر.
+
+\`\`\`text
+callback
+   ↓
+callback ends
+   ↓
+nextTick
+   ↓
+microtasks
+   ↓
+Event Loop continues
+\`\`\`
+
+
+# 143. FIFO لا تعني أن Node كلها Queue واحدة
+
+داخل queue واحدة، الترتيب عادة FIFO.
+
+لكن Node لديها:
+
+- nextTick queue
+- Microtask queue
+- timers
+- poll
+- check
+- close
+
+لذلك لا تقل:
+
+> Node تنفذ كل callbacks من queue واحدة بالترتيب.
+
+هذا غير دقيق.
+
+
+# 144. ماذا يحدث لو callback نفسها ثقيلة؟
+
+حتى لو جاءت callback من async API، JavaScript داخلها تعمل على Main Thread.
+
+مثال:
 
 \`\`\`js
 setTimeout(() => {
   const start = Date.now();
-  while (Date.now() - start < 5000) {}
+
+  while (Date.now() - start < 5000) {
+    // heavy work
+  }
 }, 0);
 \`\`\`
 
-خلال خمس ثوانٍ لا تستطيع JavaScript callback أخرى التنفيذ على main thread.
+هذه callback تحجز Main Thread خمس ثوانٍ.
 
-# 144. أهم Rule في Node Backend
+إذن:
 
-> Keep the event loop free.
+> Async source لا يعني أن callback نفسها non-blocking.
 
-تجنب على main thread داخل request handlers:
-
-- Huge loops.
-- Heavy JSON processing.
-- Large compression in JavaScript.
-- CPU-intensive transforms.
-- Synchronous filesystem calls.
-- Synchronous crypto.
-
-مثال سيئ:
-
-\`\`\`js
-app.get("/users", (req, res) => {
-  const data = fs.readFileSync("./huge-users.json", "utf8");
-  res.send(data);
-});
-\`\`\`
-
-مثال أفضل من ناحية blocking:
-
-\`\`\`js
-app.get("/users", async (req, res) => {
-  const data = await fs.promises.readFile(
-    "./huge-users.json",
-    "utf8"
-  );
-
-  res.send(data);
-});
-\`\`\`
-
-لكن لو الملف ضخم جدًا قد يكون Stream أفضل من تحميل الملف كاملًا في الذاكرة.
 
 # 145. I/O-bound vs CPU-bound
 
-**I/O-bound**: معظم الوقت Waiting.
+اربط هذا بالدرس السابق:
+
+### I/O-bound
+
+الوقت الأكبر Waiting:
 
 \`\`\`text
 Database
 Network
 Disk
-HTTP API
+External API
 \`\`\`
 
-Node ممتازة في هذا النوع.
+### CPU-bound
 
-**CPU-bound**: معظم الوقت Computing.
+الوقت الأكبر Computing:
 
 \`\`\`text
-Image encoding
+Huge loop
+Image processing
 Video processing
-Huge loops
-Cryptographic computation
-Machine learning
-Large transforms
+Heavy transformation
+Crypto calculation
 \`\`\`
 
-هذه تحتاج worker strategy أو service منفصل أو native solution حسب الحالة.
+Node ممتازة جدًا عندما لا تحجز Main Thread أثناء انتظار I/O.
 
-# 146. كيف تحدد CPU-bound؟
 
-إذا كانت العملية تستهلك processor باستمرار فهي CPU-bound.
+# 146. async/await أين يدخل في الترتيب؟
 
-\`\`\`js
-for (let i = 0; i < 1e10; i++) {
-  Math.sqrt(i);
-}
-\`\`\`
+الجزء بعد \`await\` لا يكمل فورًا في نفس السطر التنفيذي.
 
-أما:
+عندما تتحقق Promise، continuation بعد \`await\` تُجدول كـ Microtask.
 
-\`\`\`js
-await fetch("https://api.example.com");
-\`\`\`
-
-فغالبًا I/O-bound.
-
-# 147. async/await مع Event Loop
-
-\`\`\`js
-async function getData() {
-  console.log("A");
-  const data = await fetchSomething();
-  console.log("B");
-}
-\`\`\`
-
-قبل \`await\` الكود synchronous. عند \`await\` تتوقف الـ async function منطقيًا لكن main thread لا تُحجز. عندما تتحقق Promise، continuation تصبح microtask وتنفذ لاحقًا.
-
-النموذج العقلي:
-
-\`\`\`js
-const value = await promise;
-console.log(value);
-\`\`\`
-
-قريب مفاهيميًا من:
-
-\`\`\`js
-promise.then((value) => {
-  console.log(value);
-});
-\`\`\`
-
-ليس مطابقًا حرفيًا في كل التفاصيل، لكنه mental model جيد.
-
-# 148. مثال async/await ordering
+مثال:
 
 \`\`\`js
 async function test() {
   console.log("A");
+
   await Promise.resolve();
+
   console.log("B");
 }
 
@@ -486,7 +623,7 @@ test();
 console.log("D");
 \`\`\`
 
-الناتج:
+الترتيب:
 
 \`\`\`text
 C
@@ -495,35 +632,200 @@ D
 B
 \`\`\`
 
-لأن الجزء بعد \`await\` يكمل في microtask.
+الشرح:
 
-## كيف تربط أجزاء الدرس معًا؟
+1. C synchronous.
+2. نستدعي test.
+3. A synchronous.
+4. عند await تتوقف test منطقيًا.
+5. نعود وننفذ D.
+6. continuation بعد await تعمل كـ Microtask، فتطبع B.
 
-| المفهوم | دوره في Scheduling |
-|---|---|
-| Synchronous code | يعمل أولًا حتى يفرغ الـ stack |
-| process.nextTick | queue خاصة بـ Node ذات أولوية عالية |
-| Promise microtasks | then/catch/finally وawait continuation |
-| queueMicrotask | جدولة microtask مباشرة |
-| Timers | Event Loop work وليست microtask |
-| setImmediate | check phase |
-| Starvation | priority work يمنع Event Loop من التقدم |
-| async/await | Promise-based scheduling وليس threads |
 
-> فكر في الدرس كطبقات أولوية: **Current Stack → nextTick → Microtasks → Event Loop phases** مع الانتباه لاختلاف السياق.
+# 147. Mental Model واحد لحل أي سؤال Ordering
+
+عندما ترى سؤال ترتيب تنفيذ، لا تحاول الحفظ.
+
+امشِ بهذه الخطوات:
+
+\`\`\`text
+Step 1
+نفّذ كل synchronous code
+        ↓
+Step 2
+سجّل ما دخل nextTick
+        ↓
+Step 3
+سجّل Promise / queueMicrotask
+        ↓
+Step 4
+بعد انتهاء current callback:
+صرف nextTick ثم microtasks
+        ↓
+Step 5
+أكمل Event Loop phase المناسبة
+        ↓
+Step 6
+بعد كل callback:
+ارجع افحص nextTick/microtasks
+\`\`\`
+
+هذه هي طريقة التفكير الصحيحة.
+
+
+# 148. مثال نهائي محلول خطوة بخطوة
+
+\`\`\`js
+console.log("A");
+
+setTimeout(() => {
+  console.log("B");
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log("C");
+});
+
+process.nextTick(() => {
+  console.log("D");
+});
+
+queueMicrotask(() => {
+  console.log("E");
+});
+
+console.log("F");
+\`\`\`
+
+### 1) Synchronous
+
+\`\`\`text
+A
+F
+\`\`\`
+
+### 2) nextTick
+
+\`\`\`text
+D
+\`\`\`
+
+### 3) Microtasks
+
+تم تسجيل Promise قبل queueMicrotask، لذلك داخل نفس microtask queue:
+
+\`\`\`text
+C
+E
+\`\`\`
+
+### 4) Timer
+
+\`\`\`text
+B
+\`\`\`
+
+الناتج المعتاد:
+
+\`\`\`text
+A
+F
+D
+C
+E
+B
+\`\`\`
+
+
+## الخريطة النهائية للدرس
+
+\`\`\`text
+                 READY WORK
+                     │
+                     ↓
+           Current JS finishes
+                     │
+                     ↓
+             nextTick queue
+                     │
+                     ↓
+        Promise / queueMicrotask
+                     │
+                     ↓
+              Event Loop
+       ┌─────────────┼─────────────┐
+       ↓             ↓             ↓
+    timers          poll          check
+ setTimeout        I/O       setImmediate
+       │             │             │
+       └─────────────┴─────────────┘
+                     ↓
+             callback executes
+                     ↓
+         check nextTick/microtasks
+                     ↓
+                 repeat
+\`\`\`
+
+
+## جدول الربط النهائي
+
+| الشيء | أين يذهب؟ | متى يعمل ذهنيًا؟ |
+|---|---|---|
+| synchronous code | Call Stack | الآن |
+| process.nextTick | nextTick queue | بعد current code وقبل microtasks المعتادة |
+| Promise.then | Microtask queue | بعد nextTick في السياقات المعتادة |
+| queueMicrotask | Microtask queue | نفس طبقة Promise |
+| code after await | Microtask | عندما تتحقق Promise |
+| setTimeout | timers | عندما تسمح timer rules |
+| I/O callback | poll / I/O processing | عندما تصبح العملية جاهزة |
+| setImmediate | check | بعد poll/check flow |
+| heavy JS callback | Main Thread | تحجز التنفيذ أثناء تشغيلها |
+| recursive nextTick | nextTick queue | قد تسبب Starvation |
+| recursive Promise | Microtask queue | قد تسبب Starvation |
+
+
+## أهم 7 قواعد للمراجعة
+
+1. synchronous code يكتمل أولًا.
+2. nextTick لا تقاطع الكود الحالي.
+3. Promise callbacks وqueueMicrotask هي Microtasks.
+4. في CommonJS والسياقات المعتادة: nextTick قبل Promise microtasks.
+5. setTimeout وsetImmediate جزء من Event Loop وليسا Microtasks.
+6. داخل I/O callback غالبًا setImmediate يسبق setTimeout(0).
+7. لا تحفظ output فقط؛ صنّف كل callback إلى queue/phase أولًا.
+
+
+## ملاحظة متقدمة مهمة
+
+في top-level **ES Modules** قد ترى ترتيبًا مختلفًا بين \`process.nextTick()\` وPromise microtasks لأن تقييم ESM نفسه يدخل في microtask machinery.
+
+لذلك لا تحفظ جملة مطلقة مثل:
+
+\`\`\`text
+nextTick ALWAYS before Promise
+\`\`\`
+
+الأصح:
+
+> في CommonJS والسياقات المعتادة داخل callbacks، nextTick لها أولوية خاصة قبل Promise microtasks، لكن السياق مهم.
 
 
 ## أسئلة مراجعة
 
-1. ما هي Microtasks؟
-2. ما هو \`process.nextTick()\`؟
-3. أيهما غالبًا له أولوية: nextTick أم Promise؟
-4. ما معنى Event Loop Starvation؟
-5. هل Promise تنشئ Thread؟
-6. هل async/await تنشئ Thread؟
-7. ما الفرق بين \`setImmediate\` و\`setTimeout(0)\`؟
-8. لماذا لا تعتمد على ترتيبهما في top-level؟
-9. لماذا \`setImmediate\` غالبًا يسبق timer داخل I/O callback؟
-10. ما الفرق بين I/O-bound وCPU-bound؟
-11. لماذا async لا تعني Efficient دائمًا؟
+1. لماذا synchronous code يعمل قبل callbacks المجدولة؟
+2. ما هي Microtask؟
+3. ما الفرق بين nextTick queue وMicrotask queue؟
+4. لماذا nextTick لا تقاطع الكود الحالي؟
+5. ما الفرق بين process.nextTick وqueueMicrotask؟
+6. كيف تسبب nextTick Starvation؟
+7. هل Promise أو async/await تنشئ Thread؟
+8. أين يذهب setTimeout؟
+9. أين يذهب setImmediate؟
+10. لماذا لا نعتمد على ترتيب setTimeout(0) وsetImmediate في top-level؟
+11. لماذا setImmediate غالبًا يسبق timer داخل I/O callback؟
+12. ماذا يحدث للكود بعد await؟
+13. كيف تحل أي سؤال Ordering خطوة بخطوة؟
+14. ما الفرق بين I/O-bound وCPU-bound؟
+15. لماذا قد يختلف top-level ESM عن CommonJS؟
 `};

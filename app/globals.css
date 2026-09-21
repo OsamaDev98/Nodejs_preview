@@ -648,3 +648,13 @@ td { color: var(--muted); }
 .movieMarkdown li{margin:5px 0}.movieMarkdown blockquote{border-right:3px solid #72d468;margin:16px 0;padding:8px 14px;background:rgba(126,220,115,.04)}
 @media(max-width:780px){.movieDetailsLead{align-items:flex-start;padding:14px}.movieDetailsLead>svg{width:30px}.movieDetailsLead h2{font-size:1.08rem}.movieMarkdown{font-size:.86rem}.movieMarkdown pre{padding:12px}}
 @media(prefers-reduced-motion:reduce){.chapterMovie .autoPhase{transition:none!important;opacity:1!important;transform:none!important;filter:none!important}}
+
+/* Site shell aligned with the cinematic chapter player */
+.studyApp{background:#030a09;color:#dce9e4}
+.studySidebar{background:linear-gradient(180deg,#06110f,#040b0a);border-left-color:rgba(126,220,115,.1)}
+.studyContent{background:radial-gradient(circle at 55% -10%,rgba(126,220,115,.055),transparent 32%),#030a09}
+.lessonHeader{background:linear-gradient(180deg,rgba(7,22,18,.86),rgba(3,10,9,.62));border-color:rgba(126,220,115,.1);box-shadow:0 20px 80px rgba(0,0,0,.2)}
+.chapterLink{border-color:transparent}.chapterLink:hover,.chapterLink.active{background:rgba(126,220,115,.055);border-color:rgba(126,220,115,.12)}
+.searchBox,.themeButton,.lessonNavButton{background:rgba(7,24,19,.72);border-color:rgba(126,220,115,.11)}
+.chapterMovie{box-shadow:0 32px 100px rgba(0,0,0,.35),0 0 0 1px rgba(126,220,115,.04)}
+.filmProgress{width:min(270px,30vw);height:3px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}.filmProgress span{display:block;height:100%;background:#79d66e;box-shadow:0 0 14px rgba(121,214,110,.4);transition:width .65s cubic-bezier(.22,1,.36,1)}

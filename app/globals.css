@@ -540,3 +540,34 @@ td { color: var(--muted); }
   .visualPlayback { flex:1; }
   .visualNextButton,.visualIconButton { min-height:34px; }
 }
+
+/* Scene 01 — paced visual journey */
+.visualJourney .runtimeWindow,.visualJourney .javascriptFile,.visualJourney .runtimeConnector{transition:opacity .9s cubic-bezier(.22,1,.36,1),transform 1.05s cubic-bezier(.22,1,.36,1),filter .9s ease,box-shadow .9s ease}
+.visualJourney .runtimeStory{transition:all .8s ease}
+.visualJourney .journeyStep-idle .runtimeWindow,.visualJourney .journeyStep-idle .javascriptFile,.visualJourney .journeyStep-idle .runtimeConnector{opacity:.28;filter:saturate(.45)}
+.visualJourney .journeyStep-0 .javascriptFile{transform:scale(1.08);box-shadow:0 0 0 1px rgba(126,220,115,.35),0 0 32px rgba(126,220,115,.13)}
+.visualJourney .journeyStep-0 .runtimeWindow{opacity:.32;filter:saturate(.5)}
+.visualJourney .journeyStep-0 .runtimeConnector{opacity:.2}
+.visualJourney .journeyStep-1 .browserWindow{opacity:1;transform:translateY(-4px);box-shadow:0 0 34px rgba(73,174,255,.08)}
+.visualJourney .journeyStep-1 .terminalWindow{opacity:.25;filter:saturate(.4)}
+.visualJourney .journeyStep-1 .javascriptFile{opacity:.75}
+.visualJourney .journeyStep-2 .browserWindow,.visualJourney .journeyStep-2 .terminalWindow{opacity:.3;filter:saturate(.45)}
+.visualJourney .journeyStep-2 .javascriptFile{opacity:1;transform:scale(1.1);box-shadow:0 0 0 1px rgba(126,220,115,.42),0 0 38px rgba(126,220,115,.16)}
+.visualJourney .journeyStep-2 .runtimeConnector{opacity:.55}
+.visualJourney .journeyStep-3 .browserWindow{opacity:.28;filter:saturate(.4)}
+.visualJourney .journeyStep-3 .terminalWindow{opacity:1;transform:translateY(-4px);box-shadow:0 0 36px rgba(126,220,115,.1)}
+.visualJourney .journeyStep-3 .javascriptFile{opacity:.75}
+.visualJourney .journeyStep-4 .runtimeWindow,.visualJourney .journeyStep-4 .javascriptFile,.visualJourney .journeyStep-4 .runtimeConnector{opacity:.78;filter:none;transform:none}
+.visualJourney .visualLessonCaption{min-height:46px;display:flex;align-items:center;justify-content:center;transition:opacity .35s ease}
+.visualJourney .visualAchievement{margin:0 auto 4px;padding:8px 12px;border:1px solid rgba(126,220,115,.18);border-radius:12px;background:rgba(126,220,115,.06)}
+.visualJourney .visualPlayback button:disabled{opacity:.4;cursor:not-allowed}
+@media(max-width:780px){
+ .visualJourney .visualCopy p{max-width:34ch;margin-inline:auto}
+ .visualJourney .visualLessonCaption{min-height:58px;line-height:1.8}
+ .visualJourney .visualPlayback{width:100%;justify-content:flex-start}
+ .visualJourney .visualLessonActions{margin-inline-start:auto}
+ .visualJourney .visualAchievement{font-size:.65rem}
+}
+@media(prefers-reduced-motion:reduce){
+ .visualJourney .runtimeWindow,.visualJourney .javascriptFile,.visualJourney .runtimeConnector{transition:none!important}
+}

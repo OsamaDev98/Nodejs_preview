@@ -232,7 +232,15 @@ export function NodeBasicsVisualLesson() {
   const [index,setIndex]=useState(0);
   const [details,setDetails]=useState(false);
   const slide=slides[index];
-  const go=(next:number)=>{setIndex(next);setDetails(false);};
+  const [phase,setPhase]=useState(0);
+  const go=(next:number)=>{setIndex(next);setDetails(false);setPhase(0);};
+
+  useEffect(()=>{
+    if(details) return;
+    setPhase(0);
+    const timers=[700,1800,3100].map((delay,i)=>window.setTimeout(()=>setPhase(i+1),delay));
+    return ()=>timers.forEach((timer)=>window.clearTimeout(timer));
+  },[index,details]);
 
   return <section className="visualLesson visualJourney chapterMovie">
     <div className="visualLessonTopbar">

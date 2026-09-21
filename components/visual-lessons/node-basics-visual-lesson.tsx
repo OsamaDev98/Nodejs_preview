@@ -235,48 +235,43 @@ export function NodeBasicsVisualLesson({ content }: { content: string }) {
     const source = content.replace(/\r\n/g, "\n").trim();
     if (!source) return fallbackSlides;
 
-    const units = source.split(/\n\n+/).map((part) => part.trim()).filter(Boolean);
-    const scenes: Slide[] = [];
-    let heading = "أساسيات Node.js وبيئة التشغيل";
-    let pendingHeading = "";
+    const sections = [
+      { title: "ما هو Node.js؟", start: "# 1. ما هو Node.js؟", end: "## 4. JavaScript Runtime Environment" },
+      { title: "JavaScript Runtime Environment", start: "## 4. JavaScript Runtime Environment", end: "## 5. Node.js وV8" },
+      { title: "Node.js وV8", start: "## 5. Node.js وV8", end: "## 6. لماذا Node.js يحتاج C++؟" },
+      { title: "لماذا Node.js يحتاج C++؟", start: "## 6. لماذا Node.js يحتاج C++؟", end: "## 7. تشغيل Node.js من Terminal" },
+      { title: "Terminal وNode REPL", start: "## 7. تشغيل Node.js من Terminal", end: "## 10. تشغيل JavaScript File باستخدام Node" },
+      { title: "تشغيل JavaScript File باستخدام Node", start: "## 10. تشغيل JavaScript File باستخدام Node", end: "## 11. Browser JavaScript vs Node.js" },
+      { title: "Browser JavaScript vs Node.js", start: "## 11. Browser JavaScript vs Node.js", end: "## 15. Mental Model مهم جدًا" },
+      { title: "Mental Model والمراجعة", start: "## 15. Mental Model مهم جدًا", end: "" },
+    ];
 
-    for (const unit of units) {
-      if (/^#{1,4}\s+[^\n]+$/.test(unit)) {
-        heading = unit.replace(/^#{1,4}\s+/, "").trim();
-        pendingHeading = unit;
-        continue;
-      }
-
-      const details = pendingHeading ? `${pendingHeading}\n\n${unit}` : unit;
-      pendingHeading = "";
-      const clean = unit
+    return sections.map((section, i) => {
+      const startAt = source.indexOf(section.start);
+      const endAt = section.end ? source.indexOf(section.end, startAt + section.start.length) : source.length;
+      const body = startAt >= 0 ? source.slice(startAt, endAt >= 0 ? endAt : source.length).trim() : "";
+      const clean = body
         .replace(/```[\s\S]*?```/g, "مثال عملي للكود")
+        .replace(/^#{1,4}\s+/gm, "")
         .replace(/`([^`]+)`/g, "$1")
         .replace(/[*_>#|]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
-      const lower = `${heading} ${unit}`.toLowerCase();
+      const lower = body.toLowerCase();
       const icon: Slide["icon"] =
-        lower.includes("v8") || lower.includes("parsing") || lower.includes("compilation") || lower.includes("optimization") ? "v8" :
-        lower.includes("memory") || lower.includes("garbage") ? "memory" :
-        lower.includes("browser") || lower.includes("global") || lower.includes("document") ? "browser" :
-        lower.includes("repl") || lower.includes("terminal") || lower.includes("node app.js") ? "terminal" :
-        lower.includes("libuv") || lower.includes("c++") || lower.includes("operating system") ? "layers" :
-        lower.includes("مراجعة") || lower.includes("mental model") ? "review" : "node";
-
-      scenes.push({
-        title: heading,
-        kicker: `${String(scenes.length + 1).padStart(2, "0")} · SCENE`,
+        i === 2 ? "v8" :
+        i === 3 ? "layers" :
+        i === 4 || i === 5 ? "terminal" :
+        i === 6 ? "browser" :
+        i === 7 ? "review" : "node";
+      return {
+        title: section.title,
+        kicker: `${String(i + 1).padStart(2, "0")} · SCENE`,
         summary: clean.length > 220 ? `${clean.slice(0, 217)}...` : clean,
         icon,
-        details,
-      });
-    }
-
-    if (pendingHeading) {
-      scenes.push({ title: heading, kicker: `${String(scenes.length + 1).padStart(2, "0")} · SCENE`, summary: heading, icon: "node", details: pendingHeading });
-    }
-    return scenes.length ? scenes : fallbackSlides;
+        details: body,
+      };
+    });
   }, [content]);
   const [index,setIndex]=useState(0);
   const [details,setDetails]=useState(false);

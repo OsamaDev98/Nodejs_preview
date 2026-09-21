@@ -82,6 +82,10 @@ export function StudyShell({ chapters }: { chapters: StudyChapter[] }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function openReference() {
+    document.getElementById("lesson-reference")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   function toggleDone(id: string) {
     setDone((current) =>
       current.includes(id) ? current.filter((item) => item !== id) : [...current, id]

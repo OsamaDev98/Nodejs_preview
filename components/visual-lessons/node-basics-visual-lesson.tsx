@@ -29,7 +29,7 @@ export function NodeBasicsVisualLesson({ onOpenReference }: { onOpenReference?: 
     setPlaying(true);
   }
 
-  function nextStep() {\n    setPlaying(false);\n    setStep((current) => Math.min(current + 1, LAST_STEP));\n  }\n\n  function replay() {
+  function replay() {
     setPlaying(false);
     setStep(0);
     window.setTimeout(() => setPlaying(true), 80);

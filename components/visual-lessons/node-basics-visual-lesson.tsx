@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BookOpenText, Check, ChevronLeft, ChevronRight, Code2, Cpu, Database, Globe2, Layers3, Network, RotateCcw, SquareTerminal } from "lucide-react";
-import { MarkdownLesson } from "@/components/markdown-lesson";
+import ReactMarkdown from "react-markdown";\nimport remarkGfm from "remark-gfm";
 
 type Slide = { title:string; kicker:string; summary:string; icon:"code"|"node"|"v8"|"memory"|"layers"|"browser"|"terminal"|"review"; details:string };
 
@@ -242,13 +242,16 @@ export function NodeBasicsVisualLesson() {
 
     {details ? <div className="visualDetailsPanel slideDetails">
       <div className="visualDetailsHeader"><div><span>تفاصيل السلايد {String(index+1).padStart(2,"0")}</span><strong>{slide.title}</strong></div><button onClick={()=>setDetails(false)}><RotateCcw size={15}/> العودة للمشهد</button></div>
-      <div className="visualDetailsScroll"><MarkdownLesson content={slide.details} chapterId="foundations-slide"/></div>
+      <div className="visualDetailsScroll movieDetailsContent">
+        <div className="movieDetailsLead"><SceneIcon kind={slide.icon}/><div><span>{slide.kicker}</span><h2>{slide.title}</h2><p>{slide.summary}</p></div></div>
+        <article className="movieMarkdown"><ReactMarkdown remarkPlugins={[remarkGfm]}>{slide.details}</ReactMarkdown></article>
+      </div>
     </div> :
     <div className="visualLessonStage movieStage">
       <div className="visualAmbient visualAmbientOne"/><div className="visualAmbient visualAmbientTwo"/><div className="visualGrid"/>
-      <div className="movieSceneIcon"><SceneIcon kind={slide.icon}/><span>{String(index+1).padStart(2,"0")}</span></div>
-      <div className="visualCopy movieCopy"><span className="visualEyebrow">{slide.kicker}</span><h2>{slide.title}</h2><p>{slide.summary}</p></div>
-      <div className="movieFlow">
+      <div className={`movieSceneIcon autoPhase phase-${phase}`}><SceneIcon kind={slide.icon}/><span>{String(index+1).padStart(2,"0")}</span></div>
+      <div className={`visualCopy movieCopy autoPhase phase-${phase}`}><span className="visualEyebrow">{slide.kicker}</span><h2>{slide.title}</h2><p>{slide.summary}</p></div>
+      <div className={`movieFlow autoPhase phase-${phase}`}>
         {index===0 && <><span>JavaScript</span><b>→</b><span>Browser Runtime</span><b>/</b><span>Node.js Runtime</span></>}
         {index===1 && <><span>V8</span><b>+</b><span>Node APIs</span><b>+</b><span>libuv</span><b>→</b><span>OS</span></>}
         {index===2 && <><span>Source</span><b>→</b><span>Parsing</span><b>→</b><span>JIT</span><b>→</b><span>Execution</span></>}
@@ -258,7 +261,7 @@ export function NodeBasicsVisualLesson() {
         {index===6 && <><span>Terminal</span><b>→</b><span>node</span><b>→</b><span>REPL / app.js</span></>}
         {index===7 && <><span>Language</span><b>→</b><span>Runtime</span><b>→</b><span>Engine + APIs</span><b>→</b><span>OS</span></>}
       </div>
-      <div className="visualLessonCaption">المشهد {index+1} من {slides.length} · {slide.summary}</div>
+      <div className={`visualLessonCaption autoPhase phase-${phase}`}>المشهد {index+1} من {slides.length} · {slide.summary}</div>
     </div>}
 
     <div className="visualLessonControls movieControls">

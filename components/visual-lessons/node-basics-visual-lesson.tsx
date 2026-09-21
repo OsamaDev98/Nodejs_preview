@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { BookOpenText, Check, ChevronLeft, ChevronRight, Code2, Cpu, Database, Globe2, Layers3, Network, RotateCcw, SquareTerminal } from "lucide-react";
-import ReactMarkdown from "react-markdown";\nimport remarkGfm from "remark-gfm";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type Slide = { title:string; kicker:string; summary:string; icon:"code"|"node"|"v8"|"memory"|"layers"|"browser"|"terminal"|"review"; details:string };
 

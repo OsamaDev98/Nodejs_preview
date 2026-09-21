@@ -593,3 +593,20 @@ td { color: var(--muted); }
  .visualJourney .visualLessonCaption{margin-top:8px;min-height:52px}
  .visualJourney .journeyStep-0 .javascriptFile{transform:scale(1.08)!important}
 }
+
+/* Chapter 01 unified learning player */
+.visualDetailsPanel{position:relative;z-index:2;background:linear-gradient(180deg,rgba(7,20,17,.98),rgba(5,14,12,.98));min-height:600px;border-top:1px solid rgba(255,255,255,.05)}
+.visualDetailsHeader{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 24px;background:rgba(4,14,12,.94);backdrop-filter:blur(14px);border-bottom:1px solid rgba(126,220,115,.12)}
+.visualDetailsHeader div{display:flex;flex-direction:column;gap:2px}.visualDetailsHeader span{font-size:.68rem;color:#75d96a;font-weight:900}.visualDetailsHeader strong{font-size:.82rem;color:#d8e4df}
+.visualDetailsHeader button{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(126,220,115,.18);background:rgba(126,220,115,.06);color:#9be590;border-radius:10px;padding:8px 11px;font-weight:800;cursor:pointer}
+.visualDetailsScroll{height:min(68vh,680px);overflow:auto;padding:26px clamp(18px,5vw,70px) 44px;scrollbar-width:thin;scrollbar-color:rgba(126,220,115,.28) transparent}
+.visualDetailsScroll .markdownLesson{max-width:900px;margin:0 auto}.visualDetailsScroll .markdownLesson>h1:first-child{margin-top:0}
+.visualModeLabel{font-size:.67rem;letter-spacing:.08em;color:#72a99a;font-weight:900;padding:8px 2px}
+.visualDetailsScroll .markdownLesson h1{margin-top:42px}.visualDetailsScroll .markdownLesson h2{margin-top:30px}
+@media(max-width:780px){
+ .visualDetailsPanel{min-height:calc(100svh - 190px)}
+ .visualDetailsHeader{padding:12px 14px;align-items:flex-start}.visualDetailsHeader strong{font-size:.72rem}
+ .visualDetailsHeader button{font-size:.68rem;padding:7px 9px}
+ .visualDetailsScroll{height:62svh;padding:18px 14px 32px}
+ .visualDetailsScroll .markdownLesson{font-size:.92rem}
+}

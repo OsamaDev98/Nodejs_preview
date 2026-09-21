@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowDown, ArrowLeft, BookOpenText, Check, ChevronLeft, Chrome, Code2, Pause, Play, RotateCcw, TerminalSquare } from "lucide-react";
+import { ArrowDown, ArrowLeft, BookOpenText, Check, ChevronLeft, Chrome, Code2, Pause, Play, RotateCcw, SquareTerminal } from "lucide-react";
 
 const STEP_DURATION_MS = [0, 4200, 4800, 5200, 6200];
 const LAST_STEP = 4;
@@ -90,7 +90,7 @@ export function NodeBasicsVisualLesson({ onOpenReference }: { onOpenReference?: 
           <article className="runtimeWindow terminalWindow">
             <div className="runtimeWindowHeader">
               <span className="windowDots"><i /><i /><i /></span>
-              <span><TerminalSquare size={16} /> Node.js</span>
+              <span><SquareTerminal size={16} /> Node.js</span>
             </div>
             <div className="runtimeWindowBody">
               <span className="runtimeLabel">Node.js Runtime</span>

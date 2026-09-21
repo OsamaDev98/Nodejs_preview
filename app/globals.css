@@ -571,3 +571,25 @@ td { color: var(--muted); }
 @media(prefers-reduced-motion:reduce){
  .visualJourney .runtimeWindow,.visualJourney .javascriptFile,.visualJourney .runtimeConnector{transition:none!important}
 }
+
+/* Scene 01 refinement — compact stage and stronger story focus */
+.visualJourney .visualLessonStage{min-height:600px;padding-top:42px;padding-bottom:28px}
+.visualJourney .visualCopy{margin-bottom:18px}
+.visualJourney .runtimeStory{min-height:230px;margin-top:8px}
+.visualJourney .journeyStep-0 .javascriptFile{opacity:1!important;filter:none!important;transform:scale(1.16)!important;z-index:6;box-shadow:0 0 0 1px rgba(126,220,115,.5),0 0 46px rgba(126,220,115,.2)!important}
+.visualJourney .journeyStep-0 .browserWindow,.visualJourney .journeyStep-0 .terminalWindow{opacity:.16!important;filter:saturate(.25) blur(.25px)!important}
+.visualJourney .journeyStep-0 .runtimeConnector{opacity:.12!important}
+.visualJourney .journeyStep-1 .javascriptFile{opacity:.7;transform:scale(.96)}
+.visualJourney .journeyStep-1 .browserWindow{transform:translateY(-5px) scale(1.015)}
+.visualJourney .journeyStep-2 .javascriptFile{transform:scale(1.14)!important}
+.visualJourney .journeyStep-3 .terminalWindow{transform:translateY(-5px) scale(1.015)}
+.visualJourney .runtimeConclusion{margin-top:12px}
+.visualJourney .visualLessonCaption{margin-top:14px;max-width:760px;margin-inline:auto;min-height:38px}
+.visualJourney .visualAchievement{margin-top:6px}
+@media(max-width:780px){
+ .visualJourney .visualLessonStage{min-height:auto;padding:28px 16px 20px}
+ .visualJourney .visualCopy{margin-bottom:10px}
+ .visualJourney .runtimeStory{min-height:360px;margin-top:4px}
+ .visualJourney .visualLessonCaption{margin-top:8px;min-height:52px}
+ .visualJourney .journeyStep-0 .javascriptFile{transform:scale(1.08)!important}
+}

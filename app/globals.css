@@ -473,3 +473,56 @@ td { color: var(--muted); }
   .visualLessonControls { align-items:flex-start; }
   .visualLessonHint span { display:none; }
 }
+
+.lessonReference { max-width:980px; margin:0 auto; scroll-margin-top:24px; }
+.referenceHeading { margin:34px 0 14px; padding:18px 20px; border:1px solid var(--border); border-radius:16px; background:linear-gradient(145deg,var(--surface),var(--surface-2)); }
+.referenceHeading span { color:var(--accent-strong); font-weight:900; font-size:1.05rem; }
+.referenceHeading p { margin:5px 0 0; color:var(--muted); line-height:1.8; font-size:.9rem; }
+.visualLessonActions { display:flex; align-items:center; gap:12px; }
+.visualReferenceButton { border:1px solid rgba(121,194,103,.22); background:rgba(121,194,103,.07); color:#9fd795; border-radius:11px; padding:9px 12px; display:inline-flex; align-items:center; gap:7px; font-size:.76rem; font-weight:800; }
+
+@media (max-width:780px) {
+  .visualLesson { width:100%; margin-bottom:18px; border-radius:16px; }
+  .visualLessonTopbar { min-height:48px; padding:9px 11px; gap:8px; }
+  .visualLessonTopbar>div:first-child { gap:7px; }
+  .visualLessonMeta { font-size:.64rem; }
+  .visualLessonProgress span { width:12px; }
+  .visualLessonStage { min-height:calc(100svh - 205px); padding:22px 12px 18px; display:flex; flex-direction:column; justify-content:flex-start; }
+  .visualCopy { text-align:center; }
+  .visualEyebrow { font-size:.68rem; margin-bottom:5px; }
+  .visualCopy h2 { max-width:330px; margin-inline:auto; font-size:clamp(1.45rem,7vw,2rem); line-height:1.3; }
+  .visualCopy p { max-width:310px; margin:6px auto 0; font-size:.78rem; line-height:1.7; }
+  .runtimeStory { width:100%; min-height:390px; margin-top:16px; display:grid; grid-template-columns:1fr; grid-template-rows:140px 76px 140px; align-items:center; gap:6px; }
+  .runtimeWindow { width:min(100%,360px); justify-self:center; border-radius:13px; }
+  .runtimeWindowHeader { height:34px; padding:0 10px; }
+  .runtimeWindowBody { min-height:104px; padding:12px 14px; gap:8px; }
+  .runtimeWindow code { font-size:.7rem; }
+  .runtimeOutput { padding:6px 8px; font-size:.67rem; }
+  .runtimeLabel { font-size:.59rem; }
+  .javascriptFile { position:relative; width:70px; height:66px; border-radius:12px; }
+  .javascriptFile svg { width:17px; }
+  .javascriptFile strong { font-size:.7rem; }
+  .javascriptFile small { font-size:.56rem; }
+  .runtimeStory.step-2 .javascriptFile { transform:translateY(-26px) scale(.9); }
+  .runtimeStory.step-3 .javascriptFile,.runtimeStory.step-4 .javascriptFile { transform:translateY(26px) scale(.9); }
+  .runtimeConnector { top:32%; bottom:32%; }
+  .runtimeConclusion { margin-top:2px; padding:8px 11px; gap:10px; border-radius:11px; }
+  .runtimeConclusion strong { font-size:.7rem; }
+  .runtimeConclusion span { font-size:.53rem; }
+  .runtimeConclusion>b { font-size:.95rem; }
+  .visualLessonCaption { min-height:36px; margin-top:10px; font-size:.7rem; line-height:1.6; }
+  .visualLessonControls { min-height:58px; padding:9px 10px; gap:8px; flex-wrap:wrap; }
+  .visualPrimaryButton,.visualSecondaryButton,.visualReferenceButton { padding:8px 9px; font-size:.69rem; }
+  .visualLessonActions { margin-right:auto; gap:7px; }
+  .visualLessonHint { display:none; }
+  .referenceHeading { margin-top:22px; padding:15px; }
+}
+@media (max-width:390px) {
+  .visualLessonStage { min-height:calc(100svh - 190px); }
+  .runtimeStory { min-height:360px; grid-template-rows:128px 68px 128px; }
+  .visualLessonMeta { display:none; }
+  .visualCopy p { font-size:.72rem; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .runtimeWindow,.javascriptFile,.runtimeConnector,.runtimeConclusion,.visualLessonProgress span { transition:none!important; }
+}

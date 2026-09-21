@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { MarkdownLesson } from "@/components/markdown-lesson";
+import { NodeBasicsVisualLesson } from "@/components/visual-lessons/node-basics-visual-lesson";
 import type { StudyChapter } from "@/types/study";
 
 const PROGRESS_KEY = "nodejs-study-progress-v2";
@@ -196,6 +197,8 @@ export function StudyShell({ chapters }: { chapters: StudyChapter[] }) {
             {done.includes(activeChapter.id) ? "تمت مذاكرة الفصل" : "علّم الفصل كمكتمل"}
           </button>
         </header>
+
+        {activeChapter.id === "foundations" && <NodeBasicsVisualLesson />}
 
         <MarkdownLesson content={activeChapter.content} chapterId={activeChapter.id} />
 

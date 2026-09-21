@@ -203,11 +203,7 @@ export function StudyShell({ chapters }: { chapters: StudyChapter[] }) {
         </header>
 
         {activeChapter.id === "foundations" ? (
-          <NodeBasicsVisualLesson
-            referenceContent={
-              <MarkdownLesson content={activeChapter.content} chapterId={activeChapter.id} />
-            }
-          />
+          <NodeBasicsVisualLesson />
         ) : (
           <MarkdownLesson content={activeChapter.content} chapterId={activeChapter.id} />
         )}

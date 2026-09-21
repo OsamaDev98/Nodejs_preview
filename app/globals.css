@@ -658,3 +658,17 @@ td { color: var(--muted); }
 .searchBox,.themeButton,.lessonNavButton{background:rgba(7,24,19,.72);border-color:rgba(126,220,115,.11)}
 .chapterMovie{box-shadow:0 32px 100px rgba(0,0,0,.35),0 0 0 1px rgba(126,220,115,.04)}
 .filmProgress{width:min(270px,30vw);height:3px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}.filmProgress span{display:block;height:100%;background:#79d66e;box-shadow:0 0 14px rgba(121,214,110,.4);transition:width .65s cubic-bezier(.22,1,.36,1)}
+
+/* Cinematic application shell */
+.cinematicApp{--cinema-bg:#030a08;--cinema-panel:#071611;--cinema-line:rgba(126,220,115,.14);--cinema-accent:#7edc73;min-height:100vh;background:radial-gradient(circle at 60% 0,rgba(126,220,115,.06),transparent 28%),var(--cinema-bg)}
+.cinematicContent{padding-top:28px!important;background:transparent!important}
+.chapterStageLabel{max-width:1180px;margin:0 auto 12px;padding:0 4px;display:flex;align-items:center;gap:10px;color:#668078;font-size:.68rem}.chapterStageLabel span{color:var(--cinema-accent);font-weight:900;letter-spacing:.08em}.chapterStageLabel strong{color:#91a69f;font-size:.72rem;font-weight:700}
+.cinematicApp .studySidebar{background:linear-gradient(180deg,#06120f,#030a08);border-color:var(--cinema-line)}
+.cinematicApp .sidebarHeader,.cinematicApp .searchBox,.cinematicApp .chapterLink,.cinematicApp .lessonNavButton{border-color:var(--cinema-line)}
+.cinematicApp .chapterLink.active{background:linear-gradient(90deg,rgba(126,220,115,.08),rgba(126,220,115,.025));box-shadow:inset 3px 0 var(--cinema-accent)}
+.cinematicApp .brandMark{background:rgba(126,220,115,.1);border:1px solid rgba(126,220,115,.22);color:var(--cinema-accent);box-shadow:0 0 28px rgba(126,220,115,.08)}
+.cinematicApp .searchBox{background:#07130f}.cinematicApp .searchBox input{background:transparent;color:#dce9e4}
+.cinematicApp .visualLesson{border-color:rgba(126,220,115,.2);background:#04100d}
+.cinematicApp .cinematicScene{background:radial-gradient(circle at 50% 38%,rgba(126,220,115,.075),transparent 34%),linear-gradient(180deg,#061510,#030c09)}
+.cinematicApp .cinematicNavigation{max-width:1180px;margin-inline:auto}
+@media(max-width:780px){.cinematicContent{padding-top:58px!important}.chapterStageLabel{padding-inline:14px}.chapterStageLabel strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowDown, BookOpenText, Check, ChevronLeft, Chrome, Code2, Pause, Play, RotateCcw, SquareTerminal } from "lucide-react";
+import { ArrowDown, ArrowRight, BookOpenText, Check, ChevronLeft, Chrome, Code2, Pause, Play, RotateCcw, SquareTerminal } from "lucide-react";
 
 const LAST_STEP = 4;
 const STEP_DURATION_MS = [4200, 5200, 5400, 5600, 7000];
@@ -14,10 +14,10 @@ const captions = [
   "الخلاصة: JavaScript هي اللغة. Browser وNode.js بيئتان مختلفتان لتشغيلها.",
 ];
 
-export function NodeBasicsVisualLesson({ onOpenReference }: { onOpenReference?: () => void }) {
+export function NodeBasicsVisualLesson({ referenceContent }: { referenceContent?: React.ReactNode }) {
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [started, setStarted] = useState(false);
+  const [started, setStarted] = useState(false);\n  const [detailsOpen, setDetailsOpen] = useState(false);
 
   useEffect(() => {
     if (!playing || step >= LAST_STEP) return;
@@ -59,7 +59,7 @@ export function NodeBasicsVisualLesson({ onOpenReference }: { onOpenReference?: 
         </div>
       </div>
 
-      <div className="visualLessonStage">
+      {detailsOpen ? (\n        <div className="visualDetailsPanel">\n          <div className="visualDetailsHeader"><div><span>التفاصيل والمرجع</span><strong>الفصل 01 · الشرح الكامل</strong></div><button onClick={() => setDetailsOpen(false)}><ArrowRight size={16} /> العودة للمشهد</button></div>\n          <div className="visualDetailsScroll">{referenceContent}</div>\n        </div>\n      ) : <div className="visualLessonStage">
         <div className="visualAmbient visualAmbientOne" /><div className="visualAmbient visualAmbientTwo" /><div className="visualGrid" />
         <div className="visualCopy">
           <span className="visualEyebrow">فكرة واحدة في أقل من دقيقة</span>
@@ -92,7 +92,7 @@ export function NodeBasicsVisualLesson({ onOpenReference }: { onOpenReference?: 
 
       <div className="visualLessonControls">
         <div className="visualPlayback">
-          {!started ? (
+          {detailsOpen ? <span className="visualModeLabel">REFERENCE MODE</span> : !started ? (
             <button className="visualPrimaryButton" onClick={start}><Play size={17} fill="currentColor" />ابدأ الرحلة</button>
           ) : (
             <>
@@ -105,7 +105,7 @@ export function NodeBasicsVisualLesson({ onOpenReference }: { onOpenReference?: 
           )}
         </div>
         <div className="visualLessonActions">
-          <button className="visualReferenceButton" onClick={onOpenReference}><BookOpenText size={16} />التفاصيل والمرجع<ArrowDown size={15} /></button>
+          <button className="visualReferenceButton" onClick={() => setDetailsOpen((value) => !value)}><BookOpenText size={16} />{detailsOpen ? "العودة للمشهد" : "التفاصيل والمرجع"}<ArrowDown size={15} /></button>
         </div>
       </div>
     </section>

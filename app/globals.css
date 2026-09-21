@@ -672,3 +672,16 @@ td { color: var(--muted); }
 .cinematicApp .cinematicScene{background:radial-gradient(circle at 50% 38%,rgba(126,220,115,.075),transparent 34%),linear-gradient(180deg,#061510,#030c09)}
 .cinematicApp .cinematicNavigation{max-width:1180px;margin-inline:auto}
 @media(max-width:780px){.cinematicContent{padding-top:58px!important}.chapterStageLabel{padding-inline:14px}.chapterStageLabel strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+
+/* Strict green-black cinema palette: remove neutral gray surfaces */
+.cinematicApp{--cinema-bg:#020806;--cinema-panel:#04120d;--cinema-panel-2:#071a13;--cinema-text:#e5f6eb;--cinema-muted:#78a18c;--cinema-line:rgba(126,220,115,.16);--cinema-accent:#7edc73;color:var(--cinema-text)!important;background:radial-gradient(circle at 58% 0,rgba(126,220,115,.065),transparent 30%),#020806!important}
+.cinematicApp .studyContent,.cinematicApp .studySidebar,.cinematicApp .chapterNav,.cinematicApp .lessonNavigation{background-color:transparent!important}
+.cinematicApp .studySidebar{background:linear-gradient(180deg,#05140e,#020806)!important}
+.cinematicApp .sidebarHeader,.cinematicApp .searchBox,.cinematicApp .chapterLink,.cinematicApp .lessonNavButton,.cinematicApp .visualLesson,.cinematicApp .visualLessonTopbar,.cinematicApp .visualLessonControls,.cinematicApp .visualDetailsPanel,.cinematicApp .visualDetailsHeader,.cinematicApp .movieDetailsLead{border-color:var(--cinema-line)!important}
+.cinematicApp .searchBox,.cinematicApp .lessonNavButton,.cinematicApp .visualLessonTopbar,.cinematicApp .visualLessonControls,.cinematicApp .visualDetailsHeader{background:#04110c!important}
+.cinematicApp .chapterLink:hover,.cinematicApp .chapterLink.active,.cinematicApp .movieDetailsLead{background:rgba(126,220,115,.055)!important}
+.cinematicApp .chapterStageLabel,.cinematicApp .sidebarMeta,.cinematicApp .chapterLinkText,.cinematicApp .visualLessonMeta,.cinematicApp .visualLessonCaption,.cinematicApp .movieCounter,.cinematicApp .movieCopy p,.cinematicApp .movieDetailsLead p,.cinematicApp .movieMarkdown{color:var(--cinema-muted)!important}
+.cinematicApp .chapterStageLabel strong,.cinematicApp .chapterLink strong,.cinematicApp .movieCopy h2,.cinematicApp .movieDetailsLead h2,.cinematicApp .movieMarkdown h2,.cinematicApp .movieMarkdown h3,.cinematicApp .movieFlow span{color:var(--cinema-text)!important}
+.cinematicApp .movieFlow span{background:#06170f!important;border-color:var(--cinema-line)!important}
+.cinematicApp .filmProgress{background:#082017!important}
+.cinematicApp .visualDetailsPanel{background:linear-gradient(180deg,#04120d,#020906)!important}

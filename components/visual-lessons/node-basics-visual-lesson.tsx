@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowDown, ArrowLeft, BookOpenText, Chrome, Code2, Play, RotateCcw, TerminalSquare } from "lucide-react";
+import { ArrowDown, ArrowLeft, BookOpenText, Check, ChevronLeft, Chrome, Code2, Pause, Play, RotateCcw, TerminalSquare } from "lucide-react";
 
-const AUTO_STEP_MS = 1550;
+const STEP_DURATION_MS = [0, 4200, 4800, 5200, 6200];
 const LAST_STEP = 4;
 
 export function NodeBasicsVisualLesson({ onOpenReference }: { onOpenReference?: () => void }) {
@@ -19,7 +19,7 @@ export function NodeBasicsVisualLesson({ onOpenReference }: { onOpenReference?: 
 
     const timer = window.setTimeout(() => {
       setStep((current) => Math.min(current + 1, LAST_STEP));
-    }, AUTO_STEP_MS);
+    }, STEP_DURATION_MS[step] ?? 5000);
 
     return () => window.clearTimeout(timer);
   }, [playing, step]);
@@ -29,7 +29,7 @@ export function NodeBasicsVisualLesson({ onOpenReference }: { onOpenReference?: 
     setPlaying(true);
   }
 
-  function replay() {
+  function nextStep() {\n    setPlaying(false);\n    setStep((current) => Math.min(current + 1, LAST_STEP));\n  }\n\n  function replay() {
     setPlaying(false);
     setStep(0);
     window.setTimeout(() => setPlaying(true), 80);
@@ -40,7 +40,7 @@ export function NodeBasicsVisualLesson({ onOpenReference }: { onOpenReference?: 
       <div className="visualLessonTopbar">
         <div>
           <span className="visualLive"><i /> VISUAL LESSON</span>
-          <span className="visualLessonMeta">الفصل 01 · المشهد 01</span>
+          <span className="visualLessonMeta">رحلة 01 · JavaScript خارج المتصفح</span>
         </div>
         <div className="visualLessonProgress" aria-label="تقدم المشهد">
           {Array.from({ length: LAST_STEP + 1 }, (_, index) => (
@@ -55,11 +55,11 @@ export function NodeBasicsVisualLesson({ onOpenReference }: { onOpenReference?: 
         <div className="visualGrid" />
 
         <div className="visualCopy">
-          <span className="visualEyebrow">قبل ما نفهم Node.js</span>
+          <span className="visualEyebrow">رحلة قصيرة · فكرة واحدة</span>
           <h2 id="visual-lesson-title">
-            JavaScript <em>مش عايشة جوه المتصفح</em>
+            نفس JavaScript، <em>مكان تشغيل مختلف</em>
           </h2>
-          <p>اللغة واحدة، لكن البيئة التي تشغّلها يمكن أن تتغير.</p>
+          <p>شاهد نفس الملف ينتقل من المتصفح إلى Node.js. لا تحفظ تعريفات الآن؛ تابع القصة فقط.</p>
         </div>
 
         <div className={`runtimeStory step-${step}`}>
@@ -107,11 +107,11 @@ export function NodeBasicsVisualLesson({ onOpenReference }: { onOpenReference?: 
         </div>
 
         <div className="visualLessonCaption" aria-live="polite">
-          {step === 0 && "ابدأ المشهد وشاهد نفس ملف JavaScript يعمل في بيئتين مختلفتين."}
-          {step === 1 && "في البداية نرى JavaScript تعمل داخل Browser Runtime."}
-          {step === 2 && "لكن ملف JavaScript نفسه ليس جزءًا من المتصفح."}
-          {step === 3 && "Node.js يوفر Runtime آخر يستطيع تشغيل الملف خارج المتصفح."}
-          {step === 4 && "ثبّت الفكرة: JavaScript لغة، أما Browser وNode.js فهما بيئتا تشغيل."}
+          {step === 0 && "ابدأ الرحلة. سنغيّر مكان تشغيل الملف فقط، ونراقب ما الذي يتغير."}
+          {step === 1 && "هنا المتصفح هو البيئة التي تستضيف JavaScript وتوفر لها الأدوات التي تحتاجها."}
+          {step === 2 && "الآن ركّز على app.js: هذا هو نفس كود JavaScript. اللغة نفسها لم تتغير."}
+          {step === 3 && "نشغّل نفس الملف باستخدام Node.js. تغيّرت بيئة التشغيل، لكن JavaScript ما زالت JavaScript."}
+          {step === 4 && "أنجزت الفكرة الأولى: JavaScript هي اللغة، وBrowser وNode.js بيئتان مختلفتان لتشغيلها."}
         </div>
       </div>
 

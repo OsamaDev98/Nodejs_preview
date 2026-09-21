@@ -11,17 +11,17 @@ const slides: Slide[] = [
 ## JavaScript وRuntime Environment
 **Runtime** هي البيئة التي يتم داخلها تنفيذ البرنامج أثناء التشغيل.
 
-```text
+\`\`\`text
 JavaScript → Browser Runtime
 JavaScript → Node.js Runtime
-```
+\`\`\`
 
 القاعدة التي سنبني عليها الفصل كله:
 
-```text
+\`\`\`text
 JavaScript ≠ Browser
 JavaScript ≠ Node.js
-```
+\`\`\`
 
 JavaScript هي اللغة. Browser وNode.js بيئتا تشغيل توفران للغة محرك تنفيذ وAPIs وإمكانيات مختلفة.
 `},
@@ -37,23 +37,23 @@ Node.js تستخدم V8 وتضيف حوله Node APIs وlibuv وطبقات C/C++
 ### Cross-platform
 تعمل Node.js على Windows وLinux وmacOS. معظم التطبيق يعمل دون تغيير، لكن File paths وEnvironment variables وPermissions وProcess signals قد تختلف، لذلك توفر Node APIs طبقة تساعد على التعامل مع هذه الاختلافات.
 
-```js
+\`\`\`js
 const os = require("node:os");
 console.log(os.platform()); // win32 | linux | darwin
-```
+\`\`\`
 `},
 {title:"من ينفذ JavaScript داخل Node؟",kicker:"03 · Inside V8",summary:"نفتح Node.js ونجد V8: المحرك المسؤول عن فهم JavaScript وتجهيزها وتنفيذها.",icon:"v8",details:String.raw`
 ## Node.js وV8
 V8 هو JavaScript Engine طُوّر أساسًا بواسطة Google ويُستخدم في Chrome وكذلك Node.js.
 
-```text
+\`\`\`text
 JavaScript Code → V8 → executable instructions → CPU
-```
+\`\`\`
 
 V8 مسؤول عن **Parsing وCompilation/JIT وExecution وMemory Management وGarbage Collection وOptimization**. لكن Node.js ليست V8 فقط.
 
 ### Parsing
-V8 يقرأ Source Code ويفهم تركيبه النحوي ويحوله إلى تمثيل داخلي/AST-like structure. مثل `const x = 10 + 20` يجب فهمه كـvariable declaration وexpression. وإذا كان الكود `const x = ;` فسيظهر Syntax Error قبل التنفيذ الطبيعي.
+V8 يقرأ Source Code ويفهم تركيبه النحوي ويحوله إلى تمثيل داخلي/AST-like structure. مثل \`const x = 10 + 20\` يجب فهمه كـvariable declaration وexpression. وإذا كان الكود \`const x = ;\` فسيظهر Syntax Error قبل التنفيذ الطبيعي.
 
 ### Compilation وJIT
 بعد فهم البنية، يستخدم V8 pipeline من interpreter/compiler وتقنيات JIT لإنتاج تعليمات قابلة للتنفيذ بكفاءة. لذلك وصف JavaScript بأنها interpreted فقط تبسيط غير دقيق.
@@ -61,9 +61,9 @@ V8 يقرأ Source Code ويفهم تركيبه النحوي ويحوله إلى
 ### Execution
 تبدأ التعليمات في العمل، وتدخل function calls إلى Call Stack ثم تخرج عند الانتهاء.
 
-```text
+\`\`\`text
 Function call → Call Stack → Execute → Return
-```
+\`\`\`
 
 هذه المراحل Mental Model وليست خطًا يحدث مرة واحدة فقط؛ أثناء التشغيل تتداخل معها الذاكرة والـGC والـoptimization.
 `},
@@ -71,30 +71,30 @@ Function call → Call Stack → Execute → Return
 ## Memory Management
 القيم والـobjects والـfunctions والبيانات المؤقتة تحتاج Memory. V8 يدير تخصيص الذاكرة تلقائيًا.
 
-```js
+\`\`\`js
 const user = { name: "Osama", age: 28 };
-```
+\`\`\`
 
 الفكرة: Create value → Allocate Memory → Use data.
 
 ## Garbage Collection
 إذا لم يعد object قابلًا للوصول، يمكن للـGarbage Collector استعادة ذاكرته لاحقًا.
 
-```js
+\`\`\`js
 let user = { name: "Osama" };
 user = null;
-```
+\`\`\`
 
 هذا لا يعني أن GC يعمل فورًا؛ V8 يحدد متى وكيف يجري عملية التنظيف.
 
 ## Optimization وDeoptimization
 يراقب V8 التنفيذ. الكود الذي يصبح "hot" قد يخضع لـJIT optimization ليعمل أسرع. وإذا تغيرت assumptions التي بُني عليها التحسين يمكن أن يحدث deoptimization.
 
-```text
+\`\`\`text
 Source → Parsing → Compilation/JIT → Execution
                          ↕
 Memory → GC when needed → Optimization/Deoptimization
-```
+\`\`\`
 `},
 {title:"V8 وحده لا يصنع Node.js",kicker:"05 · Node APIs + libuv + OS",summary:"نخرج من V8 ونرى الطبقات التي تمنح JavaScript الملفات والشبكة والـasync I/O وإمكانيات النظام.",icon:"layers",details:String.raw`
 ## الصورة الكاملة
@@ -109,82 +109,82 @@ Memory → GC when needed → Optimization/Deoptimization
 | OS | Files + sockets + network + system calls + resources |
 
 ### لماذا تحتاج Node إلى C++؟
-JavaScript كلغة لا تحتوي `readFile()` أو APIs مباشرة للـfilesystem وnetwork sockets والـprocesses. Node هي التي توفر هذه الإمكانيات وتربطها بالنظام.
+JavaScript كلغة لا تحتوي \`readFile()\` أو APIs مباشرة للـfilesystem وnetwork sockets والـprocesses. Node هي التي توفر هذه الإمكانيات وتربطها بالنظام.
 
-```js
+\`\`\`js
 const fs = require("node:fs");
 fs.readFile("users.json", "utf8", (err, data) => {
   if (err) throw err;
   console.log(data);
 });
-```
+\`\`\`
 
 في async filesystem APIs يرتبط العمل غالبًا بـlibuv Thread Pool. أما networking فلا يعني أن كل request يعمل داخل Thread Pool؛ أغلب socket I/O يعتمد على آليات OS مثل epoll/kqueue/IOCP وتنسق libuv معها عبر Event Loop.
 
-```text
+\`\`\`text
 File: JS → fs → internals/bindings → libuv → Thread Pool/OS → Event Loop → callback → V8
 Network: JS → http/net → Node/libuv → OS networking → Event Loop → callback → V8
-```
+\`\`\`
 
 الجملة الأساسية: **V8 يشغّل JavaScript، libuv تنسق asynchronous I/O والـEvent Loop، وNode APIs تربط كودك بهذه الإمكانيات ونظام التشغيل.**
 `},
 {title:"نفس اللغة، عالم مختلف",kicker:"06 · Browser vs Node.js",summary:"نرجع إلى نفس JavaScript ونقارن ما توفره البيئة حولها: DOM في المتصفح مقابل Node APIs في Node.js.",icon:"browser",details:String.raw`
 ## Browser JavaScript vs Node.js
-كلاهما يشغل JavaScript، لكن البيئة المحيطة مختلفة. Browser يوفر `window`, `document`, `localStorage`, `navigator`, `location` وDOM/Browser APIs. Node يوفر مثلًا `fs`, `path`, `http`, `process`.
+كلاهما يشغل JavaScript، لكن البيئة المحيطة مختلفة. Browser يوفر \`window\`, \`document\`, \`localStorage\`, \`navigator\`, \`location\` وDOM/Browser APIs. Node يوفر مثلًا \`fs\`, \`path\`, \`http\`, \`process\`.
 
-```js
+\`\`\`js
 console.log(document); // ReferenceError in Node عادةً
-```
+\`\`\`
 
-`document` ليست جزءًا من JavaScript؛ هي DOM API يوفرها المتصفح.
+\`document\` ليست جزءًا من JavaScript؛ هي DOM API يوفرها المتصفح.
 
 ## Global Object
-الطريقة الحديثة المشتركة للوصول إلى global object هي `globalThis`. في Browser يوجد تقليديًا `window`، وفي Node يوجد `global`.
+الطريقة الحديثة المشتركة للوصول إلى global object هي \`globalThis\`. في Browser يوجد تقليديًا \`window\`، وفي Node يوجد \`global\`.
 
-```text
+\`\`\`text
 JavaScript → globalThis
              ↙      ↘
          Browser    Node.js
           window     global
-```
+\`\`\`
 
-لا تعتمد على `this` كأنه دائمًا Global Object؛ قيمته تختلف حسب السياق وModule وStrict mode وطريقة استدعاء function. في CommonJS مثلًا قد يشير top-level `this` إلى `module.exports`. استخدم `globalThis` عند الحاجة إلى Global Object.
+لا تعتمد على \`this\` كأنه دائمًا Global Object؛ قيمته تختلف حسب السياق وModule وStrict mode وطريقة استدعاء function. في CommonJS مثلًا قد يشير top-level \`this\` إلى \`module.exports\`. استخدم \`globalThis\` عند الحاجة إلى Global Object.
 `},
 {title:"شغّل Node.js بيدك",kicker:"07 · Terminal + REPL",summary:"بعد فهم الداخل، نستخدم Node فعليًا: REPL للتجربة السريعة ثم تشغيل app.js من Terminal.",icon:"terminal",details:String.raw`
 ## Node REPL
-بعد تثبيت Node اكتب `node` في Terminal فتدخل إلى REPL: **Read → Evaluate → Print → Loop**.
+بعد تثبيت Node اكتب \`node\` في Terminal فتدخل إلى REPL: **Read → Evaluate → Print → Loop**.
 
-```text
+\`\`\`text
 > 1 + 1
 2
 > const name = "Osama"
 undefined
 > name
 'Osama'
-```
+\`\`\`
 
 REPL مفيد لتجربة JavaScript بسرعة، اختبار Functions وNode APIs وdebugging بسيط.
 
-أوامر مهمة: `.help`, `.exit`, `.clear`, `.save`, `.load`. ويمكن الخروج بـ`.exit` أو Ctrl+C مرتين.
+أوامر مهمة: \`.help\`, \`.exit\`, \`.clear\`, \`.save\`, \`.load\`. ويمكن الخروج بـ\`.exit\` أو Ctrl+C مرتين.
 
 ## تشغيل JavaScript File
-أنشئ `app.js`:
+أنشئ \`app.js\`:
 
-```js
+\`\`\`js
 console.log("Hello from Node.js");
-```
+\`\`\`
 
 ثم شغله:
 
-```bash
+\`\`\`bash
 node app.js
 # أو
 node ./app.js
-```
+\`\`\`
 `},
 {title:"ثبّت الـMental Model",kicker:"08 · Review + Corrections",summary:"نغلق الرحلة بربط Language → Runtime → Engine → APIs → OS وتصحيح أكثر الأخطاء الشائعة.",icon:"review",details:String.raw`
 ## Mental Model النهائي
-```text
+\`\`\`text
 JavaScript Language
        ↓
 Node.js Runtime
@@ -194,9 +194,9 @@ Node.js Runtime
        ├── C/C++ bindings
        ↓
 Operating System
-```
+\`\`\`
 
-لا تقل `Node.js = V8`؛ قل **Node.js uses V8**. ولا تقل `Node.js is JavaScript`؛ JavaScript = Language وNode.js = Runtime Environment. وللوصول إلى Global Object استخدم `globalThis`.
+لا تقل \`Node.js = V8\`؛ قل **Node.js uses V8**. ولا تقل \`Node.js is JavaScript\`؛ JavaScript = Language وNode.js = Runtime Environment. وللوصول إلى Global Object استخدم \`globalThis\`.
 
 هذا الـMental Model هو الأساس لما سيأتي لاحقًا في Event Loop وAsync I/O وStreams وBuffers وProcesses وWorker Threads وNetworking.
 

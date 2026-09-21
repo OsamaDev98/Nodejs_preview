@@ -230,7 +230,32 @@ function SceneIcon({kind}:{kind:Slide["icon"]}) {
 }
 
 export function NodeBasicsVisualLesson({ content }: { content: string }) {
-  const slides = useMemo(() => {\n    const original = content.trim();\n    if (!original) return fallbackSlides;\n    const chunks = original.split(/\\n\\n+/).filter(Boolean);\n    let heading = "أساسيات Node.js وبيئة التشغيل";\n    return chunks.map((chunk, i) => {\n      const headingMatch = chunk.match(/^#{1,4}\\s+(.+)$/m);\n      if (headingMatch) heading = headingMatch[1].trim();\n      const clean = chunk.replace(/```[\\s\\S]*?```/g, "مثال عملي").replace(/`([^`]+)`/g, "$1").replace(/[*_>#|]/g, " ").replace(/\\s+/g, " ").trim();\n      return { title: heading, kicker: `${String(i + 1).padStart(2, "0")} · SCENE`, summary: clean.slice(0, 190), icon: (heading.toLowerCase().includes("v8") ? "v8" : heading.toLowerCase().includes("memory") || heading.includes("Garbage") ? "memory" : heading.toLowerCase().includes("browser") || heading.includes("Global") ? "browser" : heading.toLowerCase().includes("repl") || heading.includes("Terminal") ? "terminal" : heading.includes("libuv") || heading.includes("C++") ? "layers" : "node") as Slide["icon"], details: chunk };\n    });\n  }, [content]);\n  const [index,setIndex]=useState(0);
+  const slides = useMemo(() => {
+    const original = content.trim();
+    if (!original) return fallbackSlides;
+    const chunks = original.split(/\\n\\n+/).filter(Boolean);
+    let heading = "أساسيات Node.js وبيئة التشغيل";
+    return chunks.map((chunk, i) => {
+      const headingMatch = chunk.match(/^#{1,4}\\s+(.+)$/m);
+      if (headingMatch) heading = headingMatch[1].trim();
+      const clean = chunk
+        .replace(/```[\\s\\S]*?```/g, "مثال عملي")
+        .replace(/`([^`]+)`/g, "$1")
+        .replace(/[*_>#|]/g, " ")
+        .replace(/\\s+/g, " ")
+        .trim();
+      const lower = heading.toLowerCase();
+      const icon: Slide["icon"] = lower.includes("v8") ? "v8" : lower.includes("memory") || heading.includes("Garbage") ? "memory" : lower.includes("browser") || heading.includes("Global") ? "browser" : lower.includes("repl") || heading.includes("Terminal") ? "terminal" : heading.includes("libuv") || heading.includes("C++") ? "layers" : "node";
+      return {
+        title: heading,
+        kicker: `${String(i + 1).padStart(2, "0")} · SCENE`,
+        summary: clean.slice(0, 190),
+        icon,
+        details: chunk,
+      };
+    });
+  }, [content]);
+  const [index,setIndex]=useState(0);
   const [details,setDetails]=useState(false);
   const slide=slides[index];
   const [phase,setPhase]=useState(0);

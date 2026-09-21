@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ArrowDown, ArrowRight, BookOpenText, Check, ChevronLeft, Chrome, Code2, Pause, Play, RotateCcw, SquareTerminal } from "lucide-react";
 
 const LAST_STEP = 4;
@@ -14,7 +14,7 @@ const captions = [
   "الخلاصة: JavaScript هي اللغة. Browser وNode.js بيئتان مختلفتان لتشغيلها.",
 ];
 
-export function NodeBasicsVisualLesson({ referenceContent }: { referenceContent?: React.ReactNode }) {
+export function NodeBasicsVisualLesson({ referenceContent }: { referenceContent?: ReactNode }) {
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [started, setStarted] = useState(false);\n  const [detailsOpen, setDetailsOpen] = useState(false);

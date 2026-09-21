@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft, Chrome, Code2, Play, RotateCcw, TerminalSquare } from "lucide-react";
+import { ArrowDown, ArrowLeft, BookOpenText, Chrome, Code2, Play, RotateCcw, TerminalSquare } from "lucide-react";
 
 const AUTO_STEP_MS = 1550;
 const LAST_STEP = 4;
 
-export function NodeBasicsVisualLesson() {
+export function NodeBasicsVisualLesson({ onOpenReference }: { onOpenReference?: () => void }) {
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
 
@@ -130,10 +130,17 @@ export function NodeBasicsVisualLesson() {
           )}
         </div>
 
-        <div className="visualLessonHint">
-          <span>المشهد التالي</span>
-          <strong>ما معنى Runtime؟</strong>
-          <ArrowLeft size={17} />
+        <div className="visualLessonActions">
+          <button className="visualReferenceButton" onClick={onOpenReference}>
+            <BookOpenText size={16} />
+            التفاصيل والمرجع
+            <ArrowDown size={15} />
+          </button>
+          <div className="visualLessonHint">
+            <span>المشهد التالي</span>
+            <strong>ما معنى Runtime؟</strong>
+            <ArrowLeft size={17} />
+          </div>
         </div>
       </div>
     </section>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowDown, ArrowLeft, BookOpenText, Check, ChevronLeft, Chrome, Code2, Pause, Play, RotateCcw, SquareTerminal } from "lucide-react";
+import { ArrowDown, ArrowLeft, BookOpenText, Chrome, Code2, Play, RotateCcw, SquareTerminal } from "lucide-react";
 
 const STEP_DURATION_MS = [0, 4200, 4800, 5200, 6200];
 const LAST_STEP = 4;

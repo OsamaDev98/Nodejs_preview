@@ -232,29 +232,51 @@ function SceneIcon({kind}:{kind:Slide["icon"]}) {
 
 export function NodeBasicsVisualLesson({ content }: { content: string }) {
   const slides = useMemo(() => {
-    const original = content.trim();
-    if (!original) return fallbackSlides;
-    const chunks = original.split(/\\n\\n+/).filter(Boolean);
+    const source = content.replace(/\r\n/g, "\n").trim();
+    if (!source) return fallbackSlides;
+
+    const units = source.split(/\n\n+/).map((part) => part.trim()).filter(Boolean);
+    const scenes: Slide[] = [];
     let heading = "أساسيات Node.js وبيئة التشغيل";
-    return chunks.map((chunk, i) => {
-      const headingMatch = chunk.match(/^#{1,4}\\s+(.+)$/m);
-      if (headingMatch) heading = headingMatch[1].trim();
-      const clean = chunk
-        .replace(/```[\\s\\S]*?```/g, "مثال عملي")
+    let pendingHeading = "";
+
+    for (const unit of units) {
+      if (/^#{1,4}\s+[^\n]+$/.test(unit)) {
+        heading = unit.replace(/^#{1,4}\s+/, "").trim();
+        pendingHeading = unit;
+        continue;
+      }
+
+      const details = pendingHeading ? `${pendingHeading}\n\n${unit}` : unit;
+      pendingHeading = "";
+      const clean = unit
+        .replace(/```[\s\S]*?```/g, "مثال عملي للكود")
         .replace(/`([^`]+)`/g, "$1")
         .replace(/[*_>#|]/g, " ")
-        .replace(/\\s+/g, " ")
+        .replace(/\s+/g, " ")
         .trim();
-      const lower = heading.toLowerCase();
-      const icon: Slide["icon"] = lower.includes("v8") ? "v8" : lower.includes("memory") || heading.includes("Garbage") ? "memory" : lower.includes("browser") || heading.includes("Global") ? "browser" : lower.includes("repl") || heading.includes("Terminal") ? "terminal" : heading.includes("libuv") || heading.includes("C++") ? "layers" : "node";
-      return {
+      const lower = `${heading} ${unit}`.toLowerCase();
+      const icon: Slide["icon"] =
+        lower.includes("v8") || lower.includes("parsing") || lower.includes("compilation") || lower.includes("optimization") ? "v8" :
+        lower.includes("memory") || lower.includes("garbage") ? "memory" :
+        lower.includes("browser") || lower.includes("global") || lower.includes("document") ? "browser" :
+        lower.includes("repl") || lower.includes("terminal") || lower.includes("node app.js") ? "terminal" :
+        lower.includes("libuv") || lower.includes("c++") || lower.includes("operating system") ? "layers" :
+        lower.includes("مراجعة") || lower.includes("mental model") ? "review" : "node";
+
+      scenes.push({
         title: heading,
-        kicker: `${String(i + 1).padStart(2, "0")} · SCENE`,
-        summary: clean.slice(0, 190),
+        kicker: `${String(scenes.length + 1).padStart(2, "0")} · SCENE`,
+        summary: clean.length > 220 ? `${clean.slice(0, 217)}...` : clean,
         icon,
-        details: chunk,
-      };
-    });
+        details,
+      });
+    }
+
+    if (pendingHeading) {
+      scenes.push({ title: heading, kicker: `${String(scenes.length + 1).padStart(2, "0")} · SCENE`, summary: heading, icon: "node", details: pendingHeading });
+    }
+    return scenes.length ? scenes : fallbackSlides;
   }, [content]);
   const [index,setIndex]=useState(0);
   const [details,setDetails]=useState(false);

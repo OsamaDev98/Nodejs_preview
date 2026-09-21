@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BookOpenText, Check, ChevronLeft, ChevronRight, Code2, Cpu, Database, Globe2, Layers3, Network, RotateCcw, SquareTerminal } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 type Slide = { title:string; kicker:string; summary:string; icon:"code"|"node"|"v8"|"memory"|"layers"|"browser"|"terminal"|"review"; details:string };
 
-const slides: Slide[] = [
+const fallbackSlides: Slide[] = [
 {title:"JavaScript هي اللغة، لكن أين تعمل؟",kicker:"01 · Language → Runtime",summary:"نبدأ من القاعدة: JavaScript لغة، أما Browser وNode.js فهما بيئتا تشغيل.",icon:"code",details:String.raw`
 ## JavaScript وRuntime Environment
 **Runtime** هي البيئة التي يتم داخلها تنفيذ البرنامج أثناء التشغيل.
@@ -229,8 +229,8 @@ function SceneIcon({kind}:{kind:Slide["icon"]}) {
   return <Check {...p}/>;
 }
 
-export function NodeBasicsVisualLesson() {
-  const [index,setIndex]=useState(0);
+export function NodeBasicsVisualLesson({ content }: { content: string }) {
+  const slides = useMemo(() => {\n    const original = content.trim();\n    if (!original) return fallbackSlides;\n    const chunks = original.split(/\\n\\n+/).filter(Boolean);\n    let heading = "أساسيات Node.js وبيئة التشغيل";\n    return chunks.map((chunk, i) => {\n      const headingMatch = chunk.match(/^#{1,4}\\s+(.+)$/m);\n      if (headingMatch) heading = headingMatch[1].trim();\n      const clean = chunk.replace(/```[\\s\\S]*?```/g, "مثال عملي").replace(/`([^`]+)`/g, "$1").replace(/[*_>#|]/g, " ").replace(/\\s+/g, " ").trim();\n      return { title: heading, kicker: `${String(i + 1).padStart(2, "0")} · SCENE`, summary: clean.slice(0, 190), icon: (heading.toLowerCase().includes("v8") ? "v8" : heading.toLowerCase().includes("memory") || heading.includes("Garbage") ? "memory" : heading.toLowerCase().includes("browser") || heading.includes("Global") ? "browser" : heading.toLowerCase().includes("repl") || heading.includes("Terminal") ? "terminal" : heading.includes("libuv") || heading.includes("C++") ? "layers" : "node") as Slide["icon"], details: chunk };\n    });\n  }, [content]);\n  const [index,setIndex]=useState(0);
   const [details,setDetails]=useState(false);
   const slide=slides[index];
   const [phase,setPhase]=useState(0);
@@ -246,7 +246,7 @@ export function NodeBasicsVisualLesson() {
   return <section className="visualLesson visualJourney chapterMovie">
     <div className="visualLessonTopbar">
       <div><span className="visualLive"><i/> CHAPTER MOVIE</span><span className="visualLessonMeta">الفصل 01 · {slide.kicker}</span></div>
-      <div className="visualLessonProgress">{slides.map((_,i)=><span key={i} className={i<=index?"active":""}/>)}</div>
+      <div className="filmProgress"><span style={{width:`${((index+1)/slides.length)*100}%`}} /></div>
     </div>
 
     {details ? <div className="visualDetailsPanel slideDetails">

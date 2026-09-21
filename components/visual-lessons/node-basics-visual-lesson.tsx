@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { gsap } from "gsap";
 import { BookOpenText, Check, ChevronLeft, ChevronRight, Code2, Cpu, Database, Globe2, Layers3, Network, RotateCcw, SquareTerminal } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -258,14 +259,20 @@ export function NodeBasicsVisualLesson({ content }: { content: string }) {
   const [index,setIndex]=useState(0);
   const [details,setDetails]=useState(false);
   const slide=slides[index];
-  const [phase,setPhase]=useState(0);
-  const go=(next:number)=>{setIndex(next);setDetails(false);setPhase(0);};
+  const stageRef=useRef<HTMLDivElement>(null);
+  const go=(next:number)=>{setIndex(next);setDetails(false);};
 
-  useEffect(()=>{
-    if(details) return;
-    setPhase(0);
-    const timers=[700,1800,3100].map((delay,i)=>window.setTimeout(()=>setPhase(i+1),delay));
-    return ()=>timers.forEach((timer)=>window.clearTimeout(timer));
+  useLayoutEffect(()=>{
+    if(details || !stageRef.current) return;
+    const ctx=gsap.context(()=>{
+      const tl=gsap.timeline({defaults:{ease:"power3.out"}});
+      tl.from(".movieSceneIcon",{scale:.55,opacity:0,rotation:-8,duration:.75})
+        .from(".movieCopy",{y:24,opacity:0,duration:.7},"-=.35")
+        .from(".movieFlow span, .movieFlow b",{y:14,opacity:0,stagger:.12,duration:.45},"-=.3")
+        .from(".visualLessonCaption",{y:10,opacity:0,duration:.5},"-=.15");
+      gsap.to(".movieSceneIcon",{y:-5,duration:1.8,yoyo:true,repeat:-1,ease:"sine.inOut"});
+    },stageRef);
+    return ()=>ctx.revert();
   },[index,details]);
 
   return <section className="visualLesson visualJourney chapterMovie">
@@ -281,11 +288,11 @@ export function NodeBasicsVisualLesson({ content }: { content: string }) {
         <article className="movieMarkdown"><ReactMarkdown remarkPlugins={[remarkGfm]}>{slide.details}</ReactMarkdown></article>
       </div>
     </div> :
-    <div className="visualLessonStage movieStage">
+    <div ref={stageRef} className="visualLessonStage movieStage cinematicScene">
       <div className="visualAmbient visualAmbientOne"/><div className="visualAmbient visualAmbientTwo"/><div className="visualGrid"/>
-      <div className={`movieSceneIcon autoPhase phase-${phase}`}><SceneIcon kind={slide.icon}/><span>{String(index+1).padStart(2,"0")}</span></div>
-      <div className={`visualCopy movieCopy autoPhase phase-${phase}`}><span className="visualEyebrow">{slide.kicker}</span><h2>{slide.title}</h2><p>{slide.summary}</p></div>
-      <div className={`movieFlow autoPhase phase-${phase}`}>
+      <div className="movieSceneIcon"><SceneIcon kind={slide.icon}/><span>{String(index+1).padStart(2,"0")}</span></div>
+      <div className="visualCopy movieCopy"><span className="visualEyebrow">{slide.kicker}</span><h2>{slide.title}</h2><p>{slide.summary}</p></div>
+      <div className="movieFlow">
         {index===0 && <><span>JavaScript</span><b>→</b><span>Browser Runtime</span><b>/</b><span>Node.js Runtime</span></>}
         {index===1 && <><span>V8</span><b>+</b><span>Node APIs</span><b>+</b><span>libuv</span><b>→</b><span>OS</span></>}
         {index===2 && <><span>Source</span><b>→</b><span>Parsing</span><b>→</b><span>JIT</span><b>→</b><span>Execution</span></>}
@@ -295,7 +302,7 @@ export function NodeBasicsVisualLesson({ content }: { content: string }) {
         {index===6 && <><span>Terminal</span><b>→</b><span>node</span><b>→</b><span>REPL / app.js</span></>}
         {index===7 && <><span>Language</span><b>→</b><span>Runtime</span><b>→</b><span>Engine + APIs</span><b>→</b><span>OS</span></>}
       </div>
-      <div className={`visualLessonCaption autoPhase phase-${phase}`}>المشهد {index+1} من {slides.length} · {slide.summary}</div>
+      <div className="visualLessonCaption">المشهد {index+1} من {slides.length} · {slide.summary}</div>
     </div>}
 
     <div className="visualLessonControls movieControls">

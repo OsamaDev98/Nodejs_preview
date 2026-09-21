@@ -144,23 +144,16 @@ export function StudyShell({ chapters }: { chapters: StudyChapter[] }) {
                   <span className="chapterNumber">{String(chapter.number).padStart(2, "0")}</span>
                   <span className="chapterLinkText">
                     <strong>{chapter.title}</strong>
-                    <small>{chapter.readingTime}</small>
+
                   </span>
-                  {completed ? <CheckCircle2 size={18} /> : <Circle size={18} />}
+
                 </button>
               );
             })
           )}
         </nav>
 
-        <div className="progressCard">
-          <div className="progressHeader">
-            <span>تقدم المذاكرة</span>
-            <strong>{progress}%</strong>
-          </div>
-          <div className="progressTrack"><span style={{ width: `${progress}%` }} /></div>
-          <small>{done.length} من {chapters.length} فصول مكتملة</small>
-        </div>
+
       </aside>
 
       {menuOpen && <button className="sidebarBackdrop" onClick={() => setMenuOpen(false)} aria-label="إغلاق القائمة" />}
@@ -185,7 +178,7 @@ export function StudyShell({ chapters }: { chapters: StudyChapter[] }) {
             <h1>{activeChapter.title}</h1>
             <p>{activeChapter.subtitle}</p>
             <div className="lessonStats">
-              <span><Clock3 size={16} />{activeChapter.readingTime}</span>
+
               <span><BookOpen size={16} />شرح تفصيلي + أمثلة + مراجعة</span>
             </div>
             <div className="keywordList">
@@ -193,17 +186,11 @@ export function StudyShell({ chapters }: { chapters: StudyChapter[] }) {
             </div>
           </div>
 
-          <button
-            className={done.includes(activeChapter.id) ? "completeButton completed" : "completeButton"}
-            onClick={() => toggleDone(activeChapter.id)}
-          >
-            {done.includes(activeChapter.id) ? <CheckCircle2 size={18} /> : <Circle size={18} />}
-            {done.includes(activeChapter.id) ? "تمت مذاكرة الفصل" : "علّم الفصل كمكتمل"}
-          </button>
+
         </header>
 
         {activeChapter.id === "foundations" ? (
-          <NodeBasicsVisualLesson />
+          <NodeBasicsVisualLesson content={activeChapter.content} />
         ) : (
           <MarkdownLesson content={activeChapter.content} chapterId={activeChapter.id} />
         )}

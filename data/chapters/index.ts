@@ -7,6 +7,7 @@ import { labsReferenceChapter } from "./labs-reference";
 import { libuvThreadpoolChapter } from "./libuv-threadpool";
 import { microtasksChapter } from "./microtasks";
 import { modulesChapter } from "./modules";
+import { restApiCrudValidationChapter } from "./rest-api-crud-validation";
 import { streamsNpmChapter } from "./streams-npm";
 import { workersPerformanceChapter } from "./workers-performance";
 
@@ -22,6 +23,7 @@ export const chapters = [
   labsReferenceChapter,
   httpFundamentalsChapter,
   expressMiddlewareChapter,
+  restApiCrudValidationChapter,
 ];
 
-export const totalReadingMinutes = 565;
+export const totalReadingMinutes = 655;

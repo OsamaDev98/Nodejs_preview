@@ -4,6 +4,8 @@
 
 ## المحتوى الحالي
 
+الموقع يحتوي حاليًا على **12 فصلًا** بإجمالي وقت قراءة تقديري **655 دقيقة**.
+
 - Node.js Runtime وV8 وREPL وBrowser vs Node.
 - Modules: Built-in / Local / npm، CommonJS، ESM، Module Wrapper وModule Cache.
 - File System: sync / async / promises وError-first callbacks.
@@ -14,6 +16,11 @@
 - Event Loop phases: timers / pending / poll / check / close callbacks.
 - Microtasks وprocess.nextTick وPromises وsetImmediate وsetTimeout.
 - CPU-bound vs I/O-bound، Worker Threads، Child Processes، Event Loop Lag، Latency وThroughput.
+- HTTP Server وRequest/Response وmethods وstatus codes وheaders وrequest body.
+- Express.js وRouting وMiddleware وRouter وerror handling.
+- REST API وCRUD وResources وEndpoints وPostman وbody parsing وValidation.
+- express-validator وJoi وZod مع أمثلة عملية.
+- تنظيم Backend إلى routes/controllers/services/middlewares/schemas/data.
 - معمل عملي شامل، قاموس مصطلحات، أسئلة مراجعة وInterview questions.
 
 ## المزايا
@@ -48,6 +55,9 @@ data/
     microtasks.ts
     workers-performance.ts
     labs-reference.ts
+    http-fundamentals.ts
+    express-middleware.ts
+    rest-api-crud-validation.ts
     index.ts
 types/
   study.ts

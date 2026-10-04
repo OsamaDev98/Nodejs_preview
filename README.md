@@ -4,7 +4,7 @@
 
 ## المحتوى الحالي
 
-الموقع يحتوي حاليًا على **12 فصلًا** بإجمالي وقت قراءة تقديري **655 دقيقة**.
+الموقع يحتوي حاليًا على **14 فصلًا** بإجمالي وقت قراءة تقديري **850 دقيقة**.
 
 - Node.js Runtime وV8 وREPL وBrowser vs Node.
 - Modules: Built-in / Local / npm، CommonJS، ESM، Module Wrapper وModule Cache.
@@ -21,6 +21,8 @@
 - REST API وCRUD وResources وEndpoints وPostman وbody parsing وValidation.
 - express-validator وJoi وZod مع أمثلة عملية.
 - تنظيم Backend إلى routes/controllers/services/middlewares/schemas/data.
+- MongoDB وMongoose وBSON وObjectId وNative Driver.
+- Production API Patterns: Sequelize وJSend وENV وPagination وCORS وCentralized Error Handling.
 - معمل عملي شامل، قاموس مصطلحات، أسئلة مراجعة وInterview questions.
 
 ## المزايا
@@ -58,6 +60,8 @@ data/
     http-fundamentals.ts
     express-middleware.ts
     rest-api-crud-validation.ts
+    mongodb-mongoose.ts
+    production-api-patterns.ts
     index.ts
 types/
   study.ts

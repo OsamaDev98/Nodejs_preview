@@ -1,3 +1,4 @@
+import { authenticationSecurityChapter } from "./authentication-security";
 import { eventLoopChapter } from "./event-loop";
 import { expressMiddlewareChapter } from "./express-middleware";
 import { filesBuffersChapter } from "./files-buffers";
@@ -28,6 +29,7 @@ export const chapters = [
   restApiCrudValidationChapter,
   mongodbMongooseChapter,
   productionApiPatternsChapter,
+  authenticationSecurityChapter,
 ];
 
-export const totalReadingMinutes = 850;
+export const totalReadingMinutes = 965;

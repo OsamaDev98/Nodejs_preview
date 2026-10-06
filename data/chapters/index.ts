@@ -11,6 +11,7 @@ import { modulesChapter } from "./modules";
 import { mongodbMongooseChapter } from "./mongodb-mongoose";
 import { productionApiPatternsChapter } from "./production-api-patterns";
 import { restApiCrudValidationChapter } from "./rest-api-crud-validation";
+import { rolesUploadsPostmanChapter } from "./roles-uploads-postman";
 import { streamsNpmChapter } from "./streams-npm";
 import { workersPerformanceChapter } from "./workers-performance";
 
@@ -30,6 +31,7 @@ export const chapters = [
   mongodbMongooseChapter,
   productionApiPatternsChapter,
   authenticationSecurityChapter,
+  rolesUploadsPostmanChapter,
 ];
 
-export const totalReadingMinutes = 965;
+export const totalReadingMinutes = 1070;

@@ -307,7 +307,7 @@ userAllowed(
 
 # 516. Rest vs Spread
 
-نفس syntax `...`، لكن حسب السياق.
+نفس syntax \`...\`، لكن حسب السياق.
 
 Rest = يجمع:
 
@@ -346,7 +346,7 @@ allowedRoles.includes(
 )
 ~~~
 
-تعيد `true` أو `false`.
+تعيد \`true\` أو \`false\`.
 
 # 518. 401 vs 403
 
@@ -475,9 +475,9 @@ avatar = binary bytes
 
 # 524. لماذا express.json() لا تكفي؟
 
-`express.json()` مخصصة لـ JSON bodies.
+\`express.json()\` مخصصة لـ JSON bodies.
 
-`multipart/form-data` تحتاج Parser متخصص.
+\`multipart/form-data\` تحتاج Parser متخصص.
 
 وهنا تأتي Multer.
 
@@ -523,7 +523,7 @@ router.post(
 upload.single("avatar")
 ~~~
 
-تعني File واحدة في Form Field اسمها `avatar`.
+تعني File واحدة في Form Field اسمها \`avatar\`.
 
 بعدها:
 
@@ -589,7 +589,7 @@ upload.fields([
 ]);
 ~~~
 
-هنا `req.files` تكون Object مقسمة حسب Field names.
+هنا \`req.files\` تكون Object مقسمة حسب Field names.
 
 # 531. MemoryStorage vs DiskStorage
 
@@ -741,7 +741,7 @@ const upload =
 
 # 537. mimetype ليست إثباتًا أمنيًا كافيًا
 
-`file.mimetype` تأتي من Multipart Metadata ويمكن التلاعب بها.
+\`file.mimetype\` تأتي من Multipart Metadata ويمكن التلاعب بها.
 
 للملفات الحساسة أو Uploads الخطرة:
 
@@ -817,9 +817,9 @@ path.join(
 
 # 542. __dirname
 
-في CommonJS، `__dirname` تعطي Directory الخاصة بالملف الحالي.
+في CommonJS، \`__dirname\` تعطي Directory الخاصة بالملف الحالي.
 
-في ESM لا توجد بنفس الشكل Built-in، وتحتاج Pattern باستخدام `import.meta.url`.
+في ESM لا توجد بنفس الشكل Built-in، وتحتاج Pattern باستخدام \`import.meta.url\`.
 
 # 543. Relative Path vs Absolute Path
 
@@ -845,7 +845,7 @@ invoice.pdf
 private-photo.jpg
 ~~~
 
-لا تقدمها ببساطة عبر `express.static()`.
+لا تقدمها ببساطة عبر \`express.static()\`.
 
 بدلًا من ذلك:
 
@@ -982,7 +982,7 @@ app.use(
 
 # 550. لماذا upload.any() تحتاج حذرًا؟
 
-`upload.any()` تقبل Files من Fields مختلفة بلا تحديد مسبق.
+\`upload.any()\` تقبل Files من Fields مختلفة بلا تحديد مسبق.
 
 هذا يوسع Surface أكثر من اللازم.
 
@@ -1034,7 +1034,7 @@ Type: File
 Value: choose file
 ~~~
 
-لا تضبط `Content-Type: multipart/form-data` يدويًا عادة في Postman؛ اتركها تضيف Boundary المناسبة.
+لا تضبط \`Content-Type: multipart/form-data\` يدويًا عادة في Postman؛ اتركها تضيف Boundary المناسبة.
 
 # 554. ما هي Boundary؟
 
@@ -1157,7 +1157,7 @@ await User.create(
 );
 ~~~
 
-وSchema تسمح بـ `admin` داخل enum، Client قد ترسل Role صحيحة لكنها غير مسموح لها اختيارها.
+وSchema تسمح بـ \`admin\` داخل enum، Client قد ترسل Role صحيحة لكنها غير مسموح لها اختيارها.
 
 المشكلة ليست Validation فقط؛ المشكلة Authorization وMass Assignment.
 
@@ -1281,17 +1281,17 @@ DB stores URL / key
 
 ## أهم التصحيحات
 
-1. `...allowedRoles` في Parameters هي Rest Parameter، وليس Spread.
+1. \`...allowedRoles\` في Parameters هي Rest Parameter، وليس Spread.
 2. Role ليست Permission.
 3. Authentication تسبق Authorization.
 4. 401 تختلف عن 403.
 5. لا تثق في role من Request Body.
-6. `express.json()` لا تعالج multipart/form-data.
+6. \`express.json()\` لا تعالج multipart/form-data.
 7. Multer Middleware لمعالجة Uploads وليست Storage Service.
-8. `file.mimetype` ليست إثباتًا كافيًا لنوع الملف.
+8. \`file.mimetype\` ليست إثباتًا كافيًا لنوع الملف.
 9. Extension ليست دليلًا على Content.
-10. `express.static()` تجعل الملفات Public حسب المسار؛ لا تستخدمها للملفات الخاصة بلا Authorization.
-11. لا تستخدم `upload.any()` بلا حاجة.
+10. \`express.static()\` تجعل الملفات Public حسب المسار؛ لا تستخدمها للملفات الخاصة بلا Authorization.
+11. لا تستخدم \`upload.any()\` بلا حاجة.
 12. ضع File Size Limits.
 13. لا تعتمد على Original Filename.
 14. Postman تضبط Multipart Boundary عادة بنفسها.

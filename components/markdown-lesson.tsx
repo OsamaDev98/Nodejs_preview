@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { reviewAnswers } from "@/data/review-answers";
 import { lessonSummaries } from "@/data/lesson-summaries";
+import { LessonVisual } from "@/components/lesson-visuals";
 
 function markReviewQuestions(markdown: string) {
   const headings = [
@@ -98,6 +99,24 @@ export function MarkdownLesson({
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
+          h1: ({ children }) => {
+            const heading = extractText(children);
+            return (
+              <>
+                <h1>{children}</h1>
+                <LessonVisual chapterId={chapterId} heading={heading} />
+              </>
+            );
+          },
+          h2: ({ children }) => {
+            const heading = extractText(children);
+            return (
+              <>
+                <h2>{children}</h2>
+                <LessonVisual chapterId={chapterId} heading={heading} />
+              </>
+            );
+          },
           pre: ({ children }) => <pre className="codeBlock">{children}</pre>,
           table: ({ children }) => (
             <div className="tableWrap">

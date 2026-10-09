@@ -4,7 +4,7 @@
 
 ## المحتوى الحالي
 
-الموقع يحتوي حاليًا على **14 فصلًا** بإجمالي وقت قراءة تقديري **850 دقيقة**.
+الموقع يحتوي حاليًا على **18 فصلًا** بإجمالي وقت قراءة تقديري **1215 دقيقة**.
 
 - Node.js Runtime وV8 وREPL وBrowser vs Node.
 - Modules: Built-in / Local / npm، CommonJS، ESM، Module Wrapper وModule Cache.
@@ -23,6 +23,10 @@
 - تنظيم Backend إلى routes/controllers/services/middlewares/schemas/data.
 - MongoDB وMongoose وBSON وObjectId وNative Driver.
 - Production API Patterns: Sequelize وJSend وENV وPagination وCORS وCentralized Error Handling.
+- Authentication وPassword Hashing وJWT وRoles/Permissions.
+- File Uploads باستخدام Multer وPostman Environments.
+- Real-Time Applications باستخدام WebSocket وSocket.IO.
+- فصل مراجعة نهائية يلخص الكورس ويحدد ما ينقصك بعده.
 - معمل عملي شامل، قاموس مصطلحات، أسئلة مراجعة وInterview questions.
 
 ## المزايا
@@ -35,6 +39,8 @@
 - تنقل سابق/تالي بين الفصول.
 - Markdown/GFM لعرض الجداول، القوائم، الاقتباسات وCode Blocks.
 - المحتوى مفصول عن UI داخل ملفات مستقلة لتسهيل إضافة أي شرح جديد مباشرة.
+- Animated concept visuals تلقائية داخل كل فصل وكل عنوان رئيسي/فرعي.
+- Visual flow في بداية كل فصل لربط الفكرة قبل قراءة التفاصيل.
 
 ## هيكل المشروع
 
@@ -46,6 +52,7 @@ app/
 components/
   study-shell.tsx
   markdown-lesson.tsx
+  lesson-visuals.tsx
 data/
   chapters/
     foundations.ts
@@ -62,6 +69,10 @@ data/
     rest-api-crud-validation.ts
     mongodb-mongoose.ts
     production-api-patterns.ts
+    authentication-security.ts
+    roles-uploads-postman.ts
+    realtime-socketio.ts
+    final-course-review.ts
     index.ts
 types/
   study.ts

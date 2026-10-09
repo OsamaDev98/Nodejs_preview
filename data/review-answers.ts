@@ -446,6 +446,30 @@ export const reviewAnswers: Record<string, string[]> = {
     "عند عدة servers تحتاج تنسيق broadcasts بين instances عادة عبر Adapter/PubSub مثل Redis Adapter، وقد تحتاج إعداد load balancing/sticky sessions حسب transports.",
   ],
 
+
+  "final-course-review": [
+    "Node.js هي JavaScript Runtime خارج المتصفح تعتمد على V8 وتوفر Node APIs وnative integrations مثل libuv.",
+    "V8 JavaScript engine تنفذ JavaScript، بينما Node.js Runtime كاملة تضم V8 وAPIs وnative bindings وlibuv وغيرها.",
+    "لأن async/await وPromises تنظّم عدم الانتظار blocking لكنها لا تنشئ Thread جديدة تلقائيًا.",
+    "لأن Streams تعالج البيانات في chunks وتقلل استهلاك الذاكرة وتساعد في backpressure مع البيانات الكبيرة.",
+    "Event Loop تنظم متى تُنفذ callbacks الجاهزة بعد انتهاء العمل الحالي وتقدم مراحل الـ asynchronous work.",
+    "HTTP غالبًا Request/Response، بينما WebSocket تبقي connection ثنائية الاتجاه مفتوحة لتبادل messages بسرعة منخفضة التأخير.",
+    "Middleware تنفذ منطقًا بين Request وResponse مثل parsing وvalidation وauthentication وlogging وerror handling.",
+    "لأن Express تنفذ middleware حسب ترتيب التسجيل؛ ترتيب خاطئ قد يمنع route أو يتسبب في response غير صحيحة.",
+    "API Validation تفحص request input عند حدود التطبيق، وMongoose Validation تحمي data model قبل التخزين.",
+    "Schema تصف شكل وقواعد البيانات، Model واجهة التعامل معها، Collection مكان تخزين documents داخل MongoDB.",
+    "لأن تسريب قاعدة البيانات سيكشف كلمات المرور مباشرة؛ يجب استخدام password hashing مناسبة مثل bcrypt.",
+    "Hashing one-way، بينما Encryption reversible باستخدام key.",
+    "لأن JWT payload في token الموقعة الشائعة قابلة للقراءة وليست مشفرة.",
+    "Authentication تحدد من هو المستخدم، Authorization تحدد ماذا يسمح له أن يفعل.",
+    "401 عند Authentication مفقودة/فاشلة، و403 عندما المستخدم معروف لكن ليس لديه Permission.",
+    "لأن CORS Browser policy وليست Authentication أو Authorization ولا تمنع curl أو backend clients.",
+    "لمنع رفع ملفات ضخمة أو أنواع خطرة وتقليل استهلاك RAM/Disk/Bandwidth والهجمات.",
+    "لأن Socket.IO transport للأحداث ولا تخزن history أو data persistence تلقائيًا.",
+    "REST مناسبة لـ CRUD وrequest/response والinitial data، وSocket.IO مناسبة للتحديثات الفورية مثل chat وnotifications.",
+    "ابدأ بـ Automated Testing ثم API Documentation؛ لأنك تحتاج أولًا ضمان أن التعديلات لا تكسر الوظائف الحالية.",
+  ],
+
   "workers-performance": [
     "readFile async وغير blocking للـ main thread؛ readFileSync synchronous ويوقف JavaScript حتى تنتهي القراءة.",
     "Blocking يعني أن main JS thread مشغول ولا يستطيع تنفيذ callbacks أو كود JavaScript آخر خلال العملية.",

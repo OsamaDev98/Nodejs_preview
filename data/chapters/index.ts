@@ -2,6 +2,7 @@ import { authenticationSecurityChapter } from "./authentication-security";
 import { eventLoopChapter } from "./event-loop";
 import { expressMiddlewareChapter } from "./express-middleware";
 import { filesBuffersChapter } from "./files-buffers";
+import { finalCourseReviewChapter } from "./final-course-review";
 import { foundationsChapter } from "./foundations";
 import { httpFundamentalsChapter } from "./http-fundamentals";
 import { labsReferenceChapter } from "./labs-reference";
@@ -34,6 +35,7 @@ export const chapters = [
   authenticationSecurityChapter,
   rolesUploadsPostmanChapter,
   realtimeSocketIoChapter,
+  finalCourseReviewChapter,
 ];
 
-export const totalReadingMinutes = 1165;
+export const totalReadingMinutes = 1215;

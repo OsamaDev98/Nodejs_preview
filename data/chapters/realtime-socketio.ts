@@ -794,7 +794,7 @@ const io =
 
 مهم:
 
-> `app.use(cors())` الخاصة بـ Express ليست بديلًا عن إعداد CORS داخل Socket.IO نفسها لاتصالات Socket.IO.
+> \`app.use(cors())\` الخاصة بـ Express ليست بديلًا عن إعداد CORS داخل Socket.IO نفسها لاتصالات Socket.IO.
 
 # 602. لماذا localhost و127.0.0.1 قد تسببان اختلاف Origin؟
 
@@ -857,7 +857,7 @@ app.get(
 </script>
 ~~~
 
-في Bundler/Frontend Framework عادة تثبت `socket.io-client`.
+في Bundler/Frontend Framework عادة تثبت \`socket.io-client\`.
 
 # 605. socket.io-client
 
@@ -1152,7 +1152,7 @@ socket.once(
 
 Listener تعمل مرة واحدة ثم تزال.
 
-EventEmitter لديها `once()` أيضًا.
+EventEmitter لديها \`once()\` أيضًا.
 
 # 619. Acknowledgements في Socket.IO
 
@@ -1449,16 +1449,16 @@ Target logical groups
 
 1. Socket.IO ليست WebSocket نفسها.
 2. Socket.IO قد تستخدم WebSocket أو Long-Polling حسب الظروف/config.
-3. `socket.on()` ليست Request، و`socket.emit()` ليست Response.
-4. الطرفان Client وServer يستطيعان `on` و`emit`.
-5. `socket.emit` للSocket الحالية، و`broadcast.emit` للآخرين، و`io.emit` للجميع.
+3. \`socket.on()\` ليست Request، و\`socket.emit()\` ليست Response.
+4. الطرفان Client وServer يستطيعان \`on\` و\`emit\`.
+5. \`socket.emit\` للSocket الحالية، و\`broadcast.emit\` للآخرين، و\`io.emit\` للجميع.
 6. Polling مختلفة عن Long-Polling.
 7. WebSocket تبدأ عادة بـ HTTP Upgrade Handshake ثم تصبح Protocol مستقلة.
-8. `socket.id` ليست User ID دائمة.
+8. \`socket.id\` ليست User ID دائمة.
 9. Real-Time Transport لا يحفظ البيانات تلقائيًا.
 10. EventEmitter ليست Network Communication.
 11. Same Host لا تعني Same Origin إذا اختلف Scheme أو Port أو Host name مثل localhost مقابل 127.0.0.1.
-12. `app.use(cors())` وحدها ليست دائمًا كافية لإعداد Socket.IO CORS.
+12. \`app.use(cors())\` وحدها ليست دائمًا كافية لإعداد Socket.IO CORS.
 13. Typing Indicator لا يفضل إرسال Event بلا تحكم مع كل keydown.
 14. Rooms ليست Namespaces.
 15. Socket.IO لا تلغي الحاجة لـ REST؛ غالبًا تستخدم الاثنين.

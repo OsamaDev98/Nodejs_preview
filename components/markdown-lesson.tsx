@@ -117,6 +117,15 @@ export function MarkdownLesson({
               </>
             );
           },
+          h3: ({ children }) => {
+            const heading = extractText(children);
+            return (
+              <>
+                <h3>{children}</h3>
+                <LessonVisual chapterId={chapterId} heading={heading} />
+              </>
+            );
+          },
           pre: ({ children }) => <pre className="codeBlock">{children}</pre>,
           table: ({ children }) => (
             <div className="tableWrap">

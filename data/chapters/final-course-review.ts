@@ -5,7 +5,7 @@ export const finalCourseReviewChapter: StudyChapter = {
   number: 18,
   title: "المراجعة النهائية: خريطة الكورس وما الذي ينقصك بعده؟",
   subtitle: "ملخص مترابط لكل ما تعلمته من Node.js Internals حتى Express وMongoDB وAuthentication وUploads وSocket.IO، مع أهم الأفكار وخريطة المرحلة التالية.",
-  readingTime: "50 دقيقة",
+  readingTime: "75 دقيقة",
   keywords: ["Final Review", "Node.js", "Express", "MongoDB", "Authentication", "JWT", "Multer", "Socket.IO", "Testing", "Docker", "Redis", "Deployment"],
   content: String.raw`
 # المراجعة النهائية للكورس

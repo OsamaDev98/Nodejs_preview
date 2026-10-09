@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { MarkdownLesson } from "@/components/markdown-lesson";
+import { LessonVisual } from "@/components/lesson-visuals";
 import type { StudyChapter } from "@/types/study";
 
 const PROGRESS_KEY = "nodejs-study-progress-v2";
@@ -179,6 +180,7 @@ export function StudyShell({ chapters }: { chapters: StudyChapter[] }) {
             <span className="lessonKicker">الفصل {String(activeChapter.number).padStart(2, "0")}</span>
             <h1>{activeChapter.title}</h1>
             <p>{activeChapter.subtitle}</p>
+            <LessonVisual chapterId={activeChapter.id} heading={activeChapter.title} hero />
             <div className="lessonStats">
               <span><Clock3 size={16} />{activeChapter.readingTime}</span>
               <span><BookOpen size={16} />شرح تفصيلي + أمثلة + مراجعة</span>

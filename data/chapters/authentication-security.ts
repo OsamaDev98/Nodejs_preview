@@ -38,7 +38,7 @@ Auth Middleware
 Protected Route
 ~~~
 
-هدف الفصل ليس فقط أن تحفظ `bcrypt.hash()` و`jwt.sign()`، بل أن تفهم لماذا نحتاج كل خطوة وما المشكلة التي تحلها.
+هدف الفصل ليس فقط أن تحفظ \`bcrypt.hash()\` و\`jwt.sign()\`، بل أن تفهم لماذا نحتاج كل خطوة وما المشكلة التي تحلها.
 
 # 422. ما هي Authentication؟
 
@@ -122,13 +122,13 @@ const userSchema = new mongoose.Schema(
 
 Mongoose لديها Built-in Validators مثل:
 
-- `required`
-- `min`
-- `max`
-- `minlength`
-- `maxlength`
-- `enum`
-- `match`
+- \`required\`
+- \`min\`
+- \`max\`
+- \`minlength\`
+- \`maxlength\`
+- \`enum\`
+- \`match\`
 
 مثال:
 
@@ -168,7 +168,7 @@ Database
 
 # 426. validator.js
 
-`validator` package هي مكتبة String Validators وSanitizers.
+\`validator\` package هي مكتبة String Validators وSanitizers.
 
 تثبيت:
 
@@ -404,7 +404,7 @@ bcrypt
 bcryptjs
 ~~~
 
-`bcryptjs` implementation JavaScript متوافقة مع bcrypt APIs بشكل واسع.
+\`bcryptjs\` implementation JavaScript متوافقة مع bcrypt APIs بشكل واسع.
 
 تثبيت:
 
@@ -468,7 +468,7 @@ const hashedPassword =
   );
 ~~~
 
-الرقم `12` هنا Cost Factor / Salt Rounds، وليس Salt نفسها.
+الرقم \`12\` هنا Cost Factor / Salt Rounds، وليس Salt نفسها.
 
 bcrypt تولد salt مناسبة داخليًا.
 
@@ -662,7 +662,7 @@ userSchema.pre(
 
 # 448. مشكلة findOneAndUpdate مع pre-save
 
-`pre("save")` لا يعني أنها ستعمل تلقائيًا لكل Update Method.
+\`pre("save")\` لا يعني أنها ستعمل تلقائيًا لكل Update Method.
 
 مثال:
 
@@ -890,8 +890,8 @@ Payload تحتوي Claims.
 
 Claims قد تكون:
 
-- Registered Claims مثل `exp`, `iat`, `iss`, `aud`, `sub`
-- Custom Claims مثل `role`
+- Registered Claims مثل \`exp\`, \`iat\`, \`iss\`, \`aud\`, \`sub\`
+- Custom Claims مثل \`role\`
 
 # 460. Signature هل هي Optional؟
 
@@ -995,7 +995,7 @@ const token =
   );
 ~~~
 
-ثم عند Verify تستخدم `decoded.sub`.
+ثم عند Verify تستخدم \`decoded.sub\`.
 
 # 466. Register + Token
 
@@ -1427,7 +1427,7 @@ const registerValidation = [
 
 # 486. Sanitization لا تعني Security كاملة
 
-`trim()` و`normalizeEmail()` تساعد في تنظيف Input.
+\`trim()\` و\`normalizeEmail()\` تساعد في تنظيف Input.
 
 لكن Sanitization ليست بديلًا عن:
 
@@ -1695,7 +1695,7 @@ userSchema.pre(
 );
 ~~~
 
-ثم Controller لا تحتاج Hash يدويًا عند `save/create` التي تمر عبر هذا behavior.
+ثم Controller لا تحتاج Hash يدويًا عند \`save/create\` التي تمر عبر هذا behavior.
 
 لكن كن واعيًا لطرق Update الأخرى.
 

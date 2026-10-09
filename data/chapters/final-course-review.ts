@@ -5,7 +5,7 @@ export const finalCourseReviewChapter: StudyChapter = {
   number: 18,
   title: "المراجعة النهائية: خريطة الكورس وما الذي ينقصك بعده؟",
   subtitle: "ملخص مترابط لكل ما تعلمته من Node.js Internals حتى Express وMongoDB وAuthentication وUploads وSocket.IO، مع أهم الأفكار وخريطة المرحلة التالية.",
-  readingTime: "75 دقيقة",
+  readingTime: "95 دقيقة",
   keywords: ["Final Review", "Node.js", "Express", "MongoDB", "Authentication", "JWT", "Multer", "Socket.IO", "Testing", "Docker", "Redis", "Deployment"],
   content: String.raw`
 # المراجعة النهائية للكورس
@@ -44,6 +44,14 @@ Production Engineering
 
 > **مثال سريع:** عندما تكتب console.log(process.version) فأنت تستخدم JavaScript تعمل داخل Node.js، وprocess API توفرها Node نفسها.
 
+**مثال كود:**
+
+~~~js
+console.log(process.version);
+console.log(process.platform);
+console.log(process.cwd());
+~~~
+
 Node.js هي JavaScript Runtime خارج المتصفح. تستخدم V8 لتنفيذ JavaScript، وتوفر Node APIs وnative integrations مثل libuv.
 
 أهم ما يجب تثبيته:
@@ -57,6 +65,18 @@ Node.js هي JavaScript Runtime خارج المتصفح. تستخدم V8 لتن�
 # 629. Modules وnpm
 
 > **مثال سريع:** ملف math.js يصدر function باسم add، وملف index.js يستوردها باستخدام require أو import، بينما Express تثبتها من npm.
+
+**مثال كود:**
+
+~~~js
+// math.js
+const add = (a, b) => a + b;
+module.exports = { add };
+
+// index.js
+const { add } = require("./math");
+console.log(add(2, 3));
+~~~
 
 تعلمنا CommonJS وESM وrequire/import وmodule.exports وModule Cache.
 
@@ -74,6 +94,17 @@ Node.js هي JavaScript Runtime خارج المتصفح. تستخدم V8 لتن�
 
 > **مثال سريع:** قراءة data.json باستخدام fs.promises.readFile ثم JSON.parse تحول النص المقروء من File إلى Object تستطيع التعامل معها.
 
+**مثال كود:**
+
+~~~js
+const fs = require("node:fs/promises");
+
+const text = await fs.readFile("./data.json", "utf8");
+const data = JSON.parse(text);
+
+console.log(data);
+~~~
+
 فهمنا الفرق بين synchronous وasynchronous APIs، ولماذا Blocking داخل request path قد يوقف معالجة Requests أخرى.
 
 تعلمنا أيضًا:
@@ -87,6 +118,15 @@ Node.js هي JavaScript Runtime خارج المتصفح. تستخدم V8 لتن�
 # 631. Streams
 
 > **مثال سريع:** نسخ فيديو كبير باستخدام createReadStream().pipe(createWriteStream()) ينقل الملف على Chunks بدل تحميله كله في RAM.
+
+**مثال كود:**
+
+~~~js
+const fs = require("node:fs");
+
+fs.createReadStream("./big.mp4")
+  .pipe(fs.createWriteStream("./copy.mp4"));
+~~~
 
 Streams تعالج البيانات تدريجيًا بدل تحميل كل شيء في Memory.
 
@@ -106,6 +146,18 @@ Writable Stream
 
 > **مثال سريع:** crypto.pbkdf2 async يمكن أن تعمل عبر libuv Thread Pool بينما Main Thread تكمل تنفيذ JavaScript الأخرى.
 
+**مثال كود:**
+
+~~~js
+const crypto = require("node:crypto");
+
+crypto.pbkdf2("password", "salt", 100000, 64, "sha512", () => {
+  console.log("PBKDF2 finished");
+});
+
+console.log("Main thread continues");
+~~~
+
 تعلمنا أن Event Loop تنظم تنفيذ callbacks الجاهزة، وأن ليس كل Async Operation تستخدم Thread جديدة.
 
 بعض filesystem/crypto/DNS/zlib operations قد تستخدم libuv Thread Pool، بينما Network I/O تعتمد غالبًا على OS event mechanisms.
@@ -113,6 +165,18 @@ Writable Stream
 # 633. Async لا تعني Parallel
 
 > **مثال سريع:** await fetch لا تعني أن JavaScript أنشأت Thread جديدة؛ هي فقط تسمح لباقي العمل أن يتقدم أثناء انتظار I/O.
+
+**مثال كود:**
+
+~~~js
+async function loadUser() {
+  const response = await fetch("https://example.com/api/user");
+  return response.json();
+}
+
+loadUser().then(console.log);
+console.log("Other JavaScript can continue");
+~~~
 
 ~~~text
 Async
@@ -130,6 +194,22 @@ Promises وasync/await لا تنشئ Threads.
 
 > **مثال سريع:** GET /api/users هي Request، وServer قد ترجع 200 مع JSON تحتوي users أو 404 إذا Resource غير موجودة.
 
+**مثال كود:**
+
+~~~js
+const http = require("node:http");
+
+http.createServer((req, res) => {
+  if (req.method === "GET" && req.url === "/api/users") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ users: [] }));
+  }
+
+  res.statusCode = 404;
+  res.end("Not Found");
+}).listen(4000);
+~~~
+
 HTTP هو أساس معظم Web APIs.
 
 ~~~text
@@ -145,6 +225,19 @@ Request تشمل method وURL وheaders وbody، وResponse تشمل status code
 # 635. Express
 
 > **مثال سريع:** app.use(express.json()) يجب أن تأتي قبل Route التي تعتمد على req.body، وإلا قد لا تجد Body parsed.
+
+**مثال كود:**
+
+~~~js
+const express = require("express");
+const app = express();
+
+app.use(express.json());
+
+app.post("/api/users", (req, res) => {
+  res.status(201).json({ data: req.body });
+});
+~~~
 
 Express جعلت بناء HTTP Server وRouting وMiddleware أسهل.
 
@@ -165,6 +258,15 @@ Response
 # 636. REST وCRUD
 
 > **مثال سريع:** GET /api/courses يعرض Courses، POST /api/courses ينشئ Course، وDELETE /api/courses/:id يحذف واحدة.
+
+**مثال كود:**
+
+~~~js
+router.get("/courses", getCourses);
+router.post("/courses", createCourse);
+router.patch("/courses/:id", updateCourse);
+router.delete("/courses/:id", deleteCourse);
+~~~
 
 تعلمنا بناء Resources باستخدام Methods:
 
@@ -189,6 +291,26 @@ DELETE /api/courses/:id
 
 > **مثال سريع:** لو Client أرسلت email غير صحيحة، Validation Middleware ترجع 400 قبل أن تصل Request إلى Controller أو Database.
 
+**مثال كود:**
+
+~~~js
+const { body, validationResult } = require("express-validator");
+
+router.post(
+  "/users",
+  body("email").isEmail(),
+  (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    res.status(201).json({ status: "success" });
+  }
+);
+~~~
+
 لا تثق في Client Input.
 
 تعلمنا Request Validation باستخدام أدوات مثل express-validator وJoi وZod كمفاهيم، بالإضافة إلى Mongoose Validation وvalidator.js.
@@ -198,6 +320,17 @@ API Validation تحمي حدود الـ API، وModel Validation تحمي شكل
 # 638. تنظيم المشروع
 
 > **مثال سريع:** Route تحدد URL، Controller تتعامل مع HTTP، Service تحتوي Business Logic، وModel تتعامل مع Database.
+
+**مثال كود:**
+
+~~~js
+router.post("/users", createUser);
+
+async function createUser(req, res) {
+  const user = await userService.create(req.body);
+  res.status(201).json({ data: user });
+}
+~~~
 
 فصلنا المسؤوليات بين:
 
@@ -216,6 +349,22 @@ config
 # 639. MongoDB وMongoose
 
 > **مثال سريع:** userSchema تصف name وemail، ثم User Model تستخدم User.create وUser.find للتعامل مع users collection.
+
+**مثال كود:**
+
+~~~js
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true }
+});
+
+const User = mongoose.model("User", userSchema);
+
+await User.create({
+  name: "Osama",
+  email: "osama@example.com"
+});
+~~~
 
 MongoDB Document Database:
 
@@ -245,6 +394,17 @@ MongoDB تستطيع العمل بدون Mongoose باستخدام Native Driver
 
 > **مثال سريع:** جميع Success Responses يمكن أن ترجع status وdata، بينما جميع Errors تمر على Global Error Handler بصيغة ثابتة.
 
+**مثال كود:**
+
+~~~js
+app.use((err, req, res, next) => {
+  res.status(err.statusCode || 500).json({
+    status: "error",
+    message: err.message
+  });
+});
+~~~
+
 تعلمنا:
 
 - Response contracts.
@@ -262,6 +422,19 @@ Production code ليست فقط كود يعمل؛ يجب أن يكون قابل�
 # 641. Authentication
 
 > **مثال سريع:** عند Register نعمل Hash للPassword ثم نحفظ User، وعند Login نبحث عن User ونقارن Password ثم نصدر JWT.
+
+**مثال كود:**
+
+~~~js
+const bcrypt = require("bcryptjs");
+
+const hashedPassword = await bcrypt.hash(req.body.password, 12);
+
+await User.create({
+  email: req.body.email,
+  password: hashedPassword
+});
+~~~
 
 Register Flow:
 
@@ -289,6 +462,19 @@ Issue JWT
 
 > **مثال سريع:** نفس Password قد تنتج Hash مختلفة في bcrypt بسبب Salt، لكن bcrypt.compare تستطيع التحقق منها بنجاح.
 
+**مثال كود:**
+
+~~~js
+const hash = await bcrypt.hash("12345678", 12);
+
+const matched = await bcrypt.compare(
+  "12345678",
+  hash
+);
+
+console.log(matched); // true
+~~~
+
 تعلمنا bcrypt وSalt وCost Factor وCompare.
 
 أهم تصحيح:
@@ -300,6 +486,21 @@ Passwords يجب أن تخزن باستخدام Password Hashing مناسبة، 
 # 643. JWT
 
 > **مثال سريع:** Server تنشئ Token باستخدام jwt.sign وتتحقق منها لاحقًا في Protected Route باستخدام jwt.verify.
+
+**مثال كود:**
+
+~~~js
+const token = jwt.sign(
+  { userId: user._id },
+  process.env.JWT_SECRET,
+  { expiresIn: "15m" }
+);
+
+const payload = jwt.verify(
+  token,
+  process.env.JWT_SECRET
+);
+~~~
 
 JWT الموقعة الشائعة:
 
@@ -314,6 +515,27 @@ Payload ليست مشفرة، لذلك لا تضع Passwords أو Secrets داخ
 # 644. Authorization
 
 > **مثال سريع:** User مسجل دخوله يمكنه قراءة Profile، لكن DELETE /users قد تكون مسموحة فقط لـ admin؛ هنا الفرق بين Authentication وAuthorization.
+
+**مثال كود:**
+
+~~~js
+const allowRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    next();
+  };
+};
+
+router.delete(
+  "/users/:id",
+  verifyToken,
+  allowRoles("admin"),
+  deleteUser
+);
+~~~
 
 Authentication تجيب: من أنت؟
 
@@ -331,6 +553,24 @@ Authorization تجيب: ماذا يسمح لك أن تفعل؟
 # 645. File Uploads
 
 > **مثال سريع:** رفع صورة Profile يتم عبر multipart/form-data ثم upload.single image، وبعدها تجد معلومات الملف في req.file.
+
+**مثال كود:**
+
+~~~js
+const multer = require("multer");
+
+const upload = multer({
+  dest: "uploads/",
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
+
+router.post(
+  "/profile-image",
+  verifyToken,
+  upload.single("image"),
+  uploadProfileImage
+);
+~~~
 
 Files تستخدم غالبًا multipart/form-data.
 
@@ -352,6 +592,17 @@ Database stores URL/Key
 
 > **مثال سريع:** بعد Login يستطيع Postman Test Script حفظ response.data.token داخل JWT Environment Variable واستخدام Bearer JWT تلقائيًا.
 
+**مثال كود:**
+
+~~~js
+const response = pm.response.json();
+
+pm.environment.set(
+  "JWT",
+  response.data.token
+);
+~~~
+
 استخدمنا Postman كWorkflow وليس فقط زر Send:
 
 - Collections.
@@ -365,6 +616,16 @@ Database stores URL/Key
 
 > **مثال سريع:** Client ترسل socket.emit chat-message، وServer تستقبلها بـ socket.on ثم تستخدم io.emit لإرسالها لبقية Clients.
 
+**مثال كود:**
+
+~~~js
+io.on("connection", (socket) => {
+  socket.on("chat message", (message) => {
+    io.emit("chat message", message);
+  });
+});
+~~~
+
 تعلمنا الفرق بين:
 
 - Polling.
@@ -377,6 +638,21 @@ Database stores URL/Key
 # 648. REST وSocket.IO معًا
 
 > **مثال سريع:** REST تجلب History القديمة للمحادثة، بينما Socket.IO ترسل الرسائل الجديدة وTyping Indicator لحظيًا.
+
+**مثال كود:**
+
+~~~js
+app.get("/api/messages", getMessages);
+
+socket.on("message:new", async (payload) => {
+  const message = await saveMessage(payload);
+
+  io.to(payload.roomId).emit(
+    "message:new",
+    message
+  );
+});
+~~~
 
 تطبيق حقيقي قد يستخدم الاثنين:
 
@@ -397,6 +673,18 @@ Socket.IO
 # 649. الصورة الكاملة للBackend
 
 > **مثال سريع:** POST /api/courses قد تمر عبر CORS ثم verifyToken ثم Validation ثم Authorization ثم Controller ثم Model ثم MongoDB ثم 201 Response.
+
+**مثال كود:**
+
+~~~js
+router.post(
+  "/courses",
+  verifyToken,
+  validateCourse,
+  allowRoles("admin"),
+  createCourse
+);
+~~~
 
 ~~~text
 Frontend
@@ -428,6 +716,20 @@ Response / Event
 
 > **مثال سريع:** لو كتبت Route واحدة تقوم Authentication وValidation وDatabase Query وResponse كلها معًا فأنت خالفت فصل المسؤوليات حتى لو الكود يعمل.
 
+**مثال كود:**
+
+~~~js
+router.post(
+  "/courses",
+  verifyToken,
+  validateCourse,
+  allowRoles("admin"),
+  createCourse
+);
+
+// كل مسؤولية في Middleware مستقلة
+~~~
+
 1. Node.js Runtime وليست لغة.
 2. V8 ليست Node كلها.
 3. Async لا تعني Thread جديدة.
@@ -453,6 +755,17 @@ Response / Event
 
 > **مثال سريع:** تستطيع الآن بناء Course Platform بها Register وLogin وCourses CRUD وRoles ورفع صور وNotifications فورية.
 
+**مثال كود:**
+
+~~~text
+POST /auth/register
+POST /auth/login
+GET  /courses
+POST /courses
+POST /courses/:id/image
+Socket event: notification:new
+~~~
+
 تستطيع بناء Backend متوسطة تحتوي على:
 
 - REST API.
@@ -469,6 +782,22 @@ Response / Event
 # 652. ما الناقص في الكورس؟
 
 > **مثال سريع:** التطبيق قد يعمل على جهازك، لكن بدون Tests وDocker وMonitoring وRate Limiting فهو لم يصل بعد إلى Production Engineering متكاملة.
+
+**مثال كود:**
+
+~~~text
+App works locally
+   ↓
+Add tests
+   ↓
+Add security
+   ↓
+Dockerize
+   ↓
+Deploy
+   ↓
+Monitor
+~~~
 
 أهم Topics لم نغطيها بعمق كافٍ:
 
@@ -501,6 +830,19 @@ Response / Event
 
 > **مثال سريع:** Test تطلب GET /api/courses وتتأكد أن statusCode يساوي 200 وأن Response تحتوي Array متوقعة.
 
+**مثال كود:**
+
+~~~js
+import request from "supertest";
+import app from "../app.js";
+
+test("GET /api/courses returns 200", async () => {
+  const response = await request(app).get("/api/courses");
+
+  expect(response.statusCode).toBe(200);
+});
+~~~
+
 بعد API تعمل، أكبر Gap غالبًا هو Testing.
 
 تعلم:
@@ -519,6 +861,18 @@ API Tests
 
 > **مثال سريع:** Swagger يمكن أن توثق GET /api/courses وتوضح Headers المطلوبة وشكل Response وStatus Codes بدون سؤال Backend Developer كل مرة.
 
+**مثال كود:**
+
+~~~yaml
+paths:
+  /api/courses:
+    get:
+      summary: Get all courses
+      responses:
+        "200":
+          description: Courses returned successfully
+~~~
+
 وثق API بحيث يعرف Frontend أو الفريق:
 
 - endpoints.
@@ -530,6 +884,23 @@ API Tests
 # 655. Security Hardening
 
 > **مثال سريع:** Helmet تضيف Security Headers وRate Limiter تمنع Client واحدة من إرسال عدد ضخم من Login Requests في فترة قصيرة.
+
+**مثال كود:**
+
+~~~js
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+
+app.use(helmet());
+
+app.use(
+  "/api/auth",
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 100
+  })
+);
+~~~
 
 تعلم:
 
@@ -546,6 +917,24 @@ API Tests
 
 > **مثال سريع:** GET /products/123 تبحث أولًا في Redis؛ عند Cache Hit ترجع النتيجة فورًا، وعند Miss تقرأ من Database ثم تحفظها في Cache.
 
+**مثال كود:**
+
+~~~js
+const cached = await redis.get("product:123");
+
+if (cached) {
+  return JSON.parse(cached);
+}
+
+const product = await Product.findById("123");
+
+await redis.set(
+  "product:123",
+  JSON.stringify(product),
+  { EX: 60 }
+);
+~~~
+
 Redis مفيدة في:
 
 - caching.
@@ -560,6 +949,21 @@ Redis مفيدة في:
 # 657. Background Jobs
 
 > **مثال سريع:** إنشاء Order يرجع 201 بسرعة، وبعدها Queue تشغل Job لإرسال Email أو إنشاء PDF بدل جعل User ينتظر.
+
+**مثال كود:**
+
+~~~js
+await Order.create(orderData);
+
+await emailQueue.add(
+  "send-confirmation",
+  { userId: req.user.id }
+);
+
+res.status(201).json({
+  status: "success"
+});
+~~~
 
 بعض الأعمال لا يجب تنفيذها داخل Request نفسها:
 
@@ -579,6 +983,19 @@ Email / PDF / image processing
 
 > **مثال سريع:** إنشاء Index على email يجعل البحث عن User بالإيميل أكثر كفاءة من فحص Documents كثيرة واحدة تلو الأخرى.
 
+**مثال كود:**
+
+~~~js
+userSchema.index(
+  { email: 1 },
+  { unique: true }
+);
+
+const user = await User.findOne({
+  email: "osama@example.com"
+});
+~~~
+
 بعد CRUD تعلم:
 
 - indexes.
@@ -591,6 +1008,23 @@ Email / PDF / image processing
 # 659. Docker وDeployment
 
 > **مثال سريع:** Dockerfile يمكن أن يثبت Dependencies ويشغل node index.js في Container متطابقة بين جهازك وServer.
+
+**مثال كود:**
+
+~~~dockerfile
+FROM node:22-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+EXPOSE 4000
+
+CMD ["node", "index.js"]
+~~~
 
 انتقل من Development إلى Production عبر فهم:
 
@@ -605,6 +1039,21 @@ Email / PDF / image processing
 # 660. Monitoring
 
 > **مثال سريع:** Log تحتوي method وpath وstatusCode وdurationMs تساعدك تعرف أن /api/users أصبحت بطيئة بدل مجرد معرفة أن Server تعمل.
+
+**مثال كود:**
+
+~~~js
+const startedAt = Date.now();
+
+res.on("finish", () => {
+  console.log({
+    method: req.method,
+    path: req.url,
+    statusCode: res.statusCode,
+    durationMs: Date.now() - startedAt
+  });
+});
+~~~
 
 في Production اسأل:
 
@@ -621,6 +1070,19 @@ Email / PDF / image processing
 
 > **مثال سريع:** TypeScript قد تمنعك أثناء التطوير من تمرير number مكان email، لكن ما زلت تحتاج Runtime Validation لأن Client خارج TypeScript.
 
+**مثال كود:**
+
+~~~ts
+type CreateUserInput = {
+  email: string;
+  password: string;
+};
+
+function createUser(input: CreateUserInput) {
+  return input.email;
+}
+~~~
+
 TypeScript تضيف Static Types وRefactoring أكثر أمانًا وIDE support أفضل.
 
 لكن Types لا تستبدل Runtime Validation.
@@ -628,6 +1090,17 @@ TypeScript تضيف Static Types وRefactoring أكثر أمانًا وIDE suppo
 # 662. Advanced Architecture
 
 > **مثال سريع:** HTTP Controller تستدعي User Service، والService تستخدم Repository؛ تغيير Database لا يجب أن يجبرك على إعادة كتابة Route بالكامل.
+
+**مثال كود:**
+
+~~~js
+async function createUserController(req, res) {
+  const user = await userService.create(req.body);
+  res.status(201).json({ data: user });
+}
+
+// service -> repository -> database
+~~~
 
 بعد المشاريع الصغيرة تعلم:
 
@@ -642,6 +1115,17 @@ TypeScript تضيف Static Types وRefactoring أكثر أمانًا وIDE suppo
 # 663. الترتيب المقترح بعد الكورس
 
 > **مثال سريع:** خذ مشروع واحد وأضف له Tests أولًا، ثم Swagger، ثم Security، ثم Docker، ثم Redis بدل تعلم كل Topic في مشروع منفصل.
+
+**مثال كود:**
+
+~~~text
+Week 1 → Complete API project
+Week 2 → Tests
+Week 3 → Swagger + Security
+Week 4 → Docker + Deploy
+Week 5 → Redis + Queue
+Week 6 → Monitoring + Performance
+~~~
 
 ~~~text
 1. Build one complete API project
@@ -661,6 +1145,23 @@ TypeScript تضيف Static Types وRefactoring أكثر أمانًا وIDE suppo
 # 664. مشروع التخرج المقترح
 
 > **مثال سريع:** Instructor تنشئ Course، JWT تتحقق منها، Role تسمح لها، البيانات تُحفظ، الصورة تُرفع، ثم الطلاب يستقبلون Notification عبر Socket.IO.
+
+**مثال كود:**
+
+~~~js
+router.post(
+  "/courses",
+  verifyToken,
+  allowRoles("instructor", "admin"),
+  validateCourse,
+  createCourse
+);
+
+io.to("students").emit(
+  "course:created",
+  { courseId: newCourse._id }
+);
+~~~
 
 ابنِ Learning Platform Backend تحتوي على:
 
@@ -690,6 +1191,18 @@ TypeScript تضيف Static Types وRefactoring أكثر أمانًا وIDE suppo
 
 > **مثال سريع:** حاول بناء POST /api/admin/courses من الصفر بحيث تحتاج JWT وadmin role وValidation و201 Response؛ إذا نجحت وشرحت كل خطوة فأنت فاهم.
 
+**مثال كود:**
+
+~~~js
+router.post(
+  "/api/admin/courses",
+  verifyToken,
+  allowRoles("admin"),
+  validateCourse,
+  createCourse
+);
+~~~
+
 اختبر نفسك بالبناء لا بالمشاهدة فقط.
 
 هل تستطيع:
@@ -710,6 +1223,32 @@ TypeScript تضيف Static Types وRefactoring أكثر أمانًا وIDE suppo
 # 666. الخلاصة النهائية
 
 > **مثال سريع:** Message جديدة تدخل من Client إلى Express، تمر على Auth وValidation، تُحفظ في MongoDB، ترجع 201، ثم Socket.IO تبثها للمستخدمين المتصلين.
+
+**مثال كود:**
+
+~~~js
+router.post(
+  "/messages",
+  verifyToken,
+  validateMessage,
+  async (req, res) => {
+    const message = await Message.create({
+      ...req.body,
+      userId: req.user.id
+    });
+
+    io.to(req.body.roomId).emit(
+      "message:new",
+      message
+    );
+
+    res.status(201).json({
+      status: "success",
+      data: { message }
+    });
+  }
+);
+~~~
 
 ~~~text
 JavaScript
